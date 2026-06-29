@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hormel Foods -- Transportation Cost Intelligence</title>
+<style>
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;background:#EDEEE6;color:#1A2816;font-size:14px}
+a{color:inherit;text-decoration:none}
+.hdr{background:#243220;padding:0 20px;height:56px;display:flex;align-items:center;gap:14px}
+.logo-box{width:38px;height:38px;background:#fff;border-radius:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-box span{font-size:12px;font-weight:800;color:#243220;letter-spacing:.04em}
+.hdr-sep{width:1px;height:36px;background:rgba(255,255,255,.2);flex-shrink:0}
+.brand-name{font-size:15px;font-weight:700;color:#fff;letter-spacing:.04em;margin-bottom:2px}
+.brand-sub{font-size:10px;color:rgba(255,255,255,.55);letter-spacing:.07em;text-transform:uppercase}
+.hdr-right{display:flex;align-items:center;gap:8px;margin-left:auto}
+.hdr-ts{text-align:right;padding-right:8px;border-right:1px solid rgba(255,255,255,.15)}
+.hdr-ts .lbl{font-size:9px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.07em}
+.hdr-ts .val{font-size:11px;color:rgba(255,255,255,.85);font-family:monospace;font-weight:500}
+.rbtn{display:flex;align-items:center;gap:6px;background:#3B5E28;color:#fff;border:none;border-radius:4px;padding:7px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;cursor:pointer;font-family:inherit;white-space:nowrap}
+.rbtn:hover{background:#4A7030}
+.rbtn:disabled{opacity:.6;cursor:default}
+.rdot{width:7px;height:7px;border-radius:50%;background:#8FCA50;flex-shrink:0;animation:blink 2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.aclabel{font-size:12px;color:rgba(255,255,255,.4);margin-left:6px}
+.avatar{width:30px;height:30px;border-radius:50%;background:#7B5EA7;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
+.tabs{background:#F0F1E8;border-bottom:1px solid rgba(40,58,30,.15);padding:0 20px;display:flex;align-items:center;gap:5px;height:44px;overflow-x:auto;flex-wrap:nowrap}
+.tbtn{font-size:11px;font-weight:500;padding:4px 12px;border-radius:4px;border:1px solid rgba(40,58,30,.25);background:transparent;color:#4A5548;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0}
+.tbtn:hover{background:rgba(59,94,40,.08)}
+.tbtn.ag{background:#3B5E28;color:#fff;border-color:#3B5E28}
+.tbtn.ao{background:#E07828;color:#fff;border-color:#E07828}
+.tsep{width:1px;height:22px;background:rgba(40,58,30,.2);margin:0 5px;flex-shrink:0}
+.stbtn{font-size:10px;font-weight:500;padding:3px 9px;border-radius:3px;border:1px solid rgba(40,58,30,.2);background:transparent;color:#5A6355;cursor:pointer;font-family:inherit;white-space:nowrap}
+.stbtn.sa{background:#243220;color:#fff;border-color:#243220}
+.ticker-wrap{overflow:hidden;background:rgba(36,50,32,.88);padding:5px 0}
+.ticker-inner{display:flex;white-space:nowrap;animation:scroll 75s linear infinite}
+.ticker-inner:hover{animation-play-state:paused}
+@keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.body{padding:16px 20px 32px}
+.alert{padding:8px 14px;border-radius:4px;font-size:12px;display:none;align-items:center;gap:8px;margin-bottom:12px}
+.alert.on{display:flex}
+.a-green{background:#E0EDCC;color:#2E4A20}
+.a-red{background:#FDE8E5;color:#A02010}
+.apikey-panel{display:none;background:#E0EDCC;border:1px solid #3B5E28;border-radius:4px;padding:10px 14px;margin-bottom:12px}
+.intel-card{background:#fff;border:1px solid rgba(40,58,30,.15);border-left:3px solid #E07828;border-radius:4px;padding:14px 18px;margin-bottom:18px}
+.intel-lbl{font-size:10px;font-weight:700;color:#3B5E28;text-transform:uppercase;letter-spacing:.12em;margin-bottom:7px}
+.intel-text{font-size:13px;color:#1A2816;line-height:1.65}
+.sec-hdr{font-size:11px;font-weight:700;color:#1A2816;text-transform:uppercase;letter-spacing:.1em;padding-bottom:6px;border-bottom:2px solid #3B5E28;display:inline-block;margin-bottom:14px;margin-top:4px}
+.modes-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:20px}
+.sigs-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.sig-card.hidden{display:none}
+.factors-box{background:#fff;border:1px solid rgba(40,58,30,.15);border-radius:4px;overflow:hidden;margin-bottom:20px}
+.htci-card{background:#fff;border:1px solid rgba(40,58,30,.15);border-left:3px solid #3B5E28;border-radius:4px;padding:14px 18px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.rt-tbl{width:100%;background:#fff;border:1px solid rgba(40,58,30,.15);border-radius:4px;overflow:hidden;margin-bottom:8px}
+.rt-hdr-row{display:grid;grid-template-columns:2.2fr 1.1fr 1fr .75fr .7fr 1fr .85fr .85fr;background:#F0F1E8;border-bottom:1px solid rgba(40,58,30,.15)}
+.lane-row{display:grid;grid-template-columns:2.2fr 1.1fr 1fr .75fr .7fr 1fr .85fr .85fr;border-bottom:1px solid rgba(40,58,30,.1);cursor:pointer;align-items:center}
+.lane-row:hover{background:#FAFAF6}
+.lane-row.sel{background:#F5F6F0}
+.lane-row:last-child{border-bottom:none}
+.rt-hc{font-size:10px;font-weight:700;color:#7A8575;text-transform:uppercase;letter-spacing:.08em;padding:7px 10px}
+.rt-dc{padding:8px 10px}
+.lane-det{background:#fff;border:1px solid rgba(40,58,30,.15);border-top:none;border-radius:0 0 4px 4px;padding:14px 16px;display:none;margin-bottom:20px}
+.lane-det.open{display:block}
+.esc-tbl{width:100%;background:#fff;border:1px solid rgba(40,58,30,.15);border-radius:4px;overflow:hidden;margin-bottom:24px}
+.esc-hdr{display:grid;grid-template-columns:3fr 1.2fr 2.5fr .8fr .9fr;background:#3D4A35;padding:9px 12px}
+.esc-hc{font-size:10px;font-weight:700;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.1em}
+.esc-row{display:grid;grid-template-columns:3fr 1.2fr 2.5fr .8fr .9fr;border-bottom:1px solid rgba(40,58,30,.1);padding:10px 12px;align-items:start}
+.esc-row:last-child{border-bottom:none}
+.esc-row:hover{background:#FAFAF6}
+.esc-dc{font-size:12px;color:#1A2816;line-height:1.5}
+.fc-mode-btn{font-size:11px;font-weight:500;padding:4px 11px;border-radius:4px;border:1px solid rgba(40,58,30,.25);background:transparent;color:#4A5548;cursor:pointer;font-family:inherit;white-space:nowrap;margin:0 4px 6px 0}
+.fc-mode-btn.fma{background:#3B5E28;color:#fff;border-color:#3B5E28}
+.ftr{background:#243220;padding:10px 20px;text-align:center}
+.ftr p{font-size:9px;color:rgba(255,255,255,.4);letter-spacing:.1em;text-transform:uppercase;font-weight:500}
+
+/* Skeleton loading */
+@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+.skeleton{background:linear-gradient(90deg,#e4e5de 25%,#f0f1e8 50%,#e4e5de 75%);background-size:400px 100%;animation:shimmer 1.4s infinite;border-radius:4px;height:14px;margin:4px 0}
+
+/* Action checklist */
+.action-item-check{width:16px;height:16px;border:1.5px solid #C83020;border-radius:3px;cursor:pointer;flex-shrink:0;margin-top:2px;appearance:none;-webkit-appearance:none;background:#fff}
+.action-item-check:checked{background:#3B5E28;border-color:#3B5E28;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='8' viewBox='0 0 10 8'%3E%3Cpath d='M1 4l2.5 2.5L9 1' stroke='%23fff' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:center}
+.action-done{opacity:.5;text-decoration:line-through}
+
+/* Delta badges */
+.delta-badge{font-size:9px;font-weight:600;padding:1px 5px;border-radius:3px;white-space:nowrap;margin-left:4px}
+.delta-up{background:#FDE8E5;color:#A02010}
+.delta-dn{background:#E0EDCC;color:#2E4A20}
+.delta-flat{background:#EEF0E6;color:#5A6355}
+
+/* Mobile responsive */
+@media(max-width:900px){
+  .modes-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .sigs-grid{grid-template-columns:1fr}
+  .rt-hdr-row,.lane-row{grid-template-columns:2fr 1fr 1fr .8fr .8fr;font-size:11px}
+  .rt-hdr-row .rt-hc:nth-child(n+6),.lane-row .rt-dc:nth-child(n+6){display:none}
+}
+@media(max-width:480px){
+  .modes-grid{grid-template-columns:1fr}
+  .hdr{flex-wrap:wrap;height:auto;padding:8px 14px;gap:8px}
+  .hdr-right{flex-wrap:wrap}
+  .body{padding:10px 12px 24px}
+  .rt-tbl{overflow-x:auto;display:block}
+  .sigs-grid{grid-template-columns:1fr}
+}
+
+/* Print styles */
+@media print{
+  .no-print,.hdr-right,.tabs,.ticker-wrap,.ftr,#copilot-fab,#copilot-panel{display:none!important}
+  body{background:#fff}
+  .body{padding:0}
+  .tp{display:block!important}
+  .modes-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .sigs-grid{grid-template-columns:1fr 1fr}
+  .lane-det{display:none!important}
+}
+
+/* ── Screener Copilot chat widget ── */
+#copilot-fab{position:fixed;bottom:22px;right:22px;z-index:1000;background:#3B5E28;color:#fff;border:none;border-radius:28px;padding:12px 18px;font-size:13px;font-weight:700;letter-spacing:.03em;cursor:pointer;font-family:inherit;box-shadow:0 4px 16px rgba(36,50,32,.32);display:flex;align-items:center;gap:8px}
+#copilot-fab:hover{background:#4A7030}
+#copilot-fab .cp-dot{width:8px;height:8px;border-radius:50%;background:#8FCA50;animation:blink 2s ease-in-out infinite}
+#copilot-panel{position:fixed;bottom:22px;right:22px;z-index:1001;width:380px;max-width:calc(100vw - 28px);height:560px;max-height:calc(100vh - 44px);background:#fff;border-radius:12px;box-shadow:0 12px 40px rgba(36,50,32,.32);display:none;flex-direction:column;overflow:hidden;border:1px solid rgba(40,58,30,.18)}
+#copilot-panel.open{display:flex}
+.cp-head{background:#243220;color:#fff;padding:13px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.cp-head .cp-title{font-size:13px;font-weight:700;letter-spacing:.03em}
+.cp-head .cp-sub{font-size:10px;color:rgba(255,255,255,.55)}
+.cp-head .cp-x{margin-left:auto;background:transparent;border:none;color:rgba(255,255,255,.7);font-size:20px;cursor:pointer;line-height:1;padding:0 4px}
+.cp-body{flex:1;overflow-y:auto;padding:14px;background:#F4F5EE;display:flex;flex-direction:column;gap:10px}
+.cp-msg{max-width:88%;padding:9px 12px;border-radius:12px;font-size:13px;line-height:1.55;white-space:pre-wrap;word-wrap:break-word}
+.cp-msg.user{align-self:flex-end;background:#3B5E28;color:#fff;border-bottom-right-radius:3px}
+.cp-msg.bot{align-self:flex-start;background:#fff;color:#1A2816;border:1px solid rgba(40,58,30,.12);border-bottom-left-radius:3px}
+.cp-msg.bot a.cp-goto{display:inline-block;margin-top:6px;font-size:11px;font-weight:700;color:#3B5E28;background:#E0EDCC;padding:4px 10px;border-radius:4px;cursor:pointer;text-decoration:none}
+.cp-typing{align-self:flex-start;color:#7A8575;font-size:12px;font-style:italic}
+.cp-starters{display:flex;flex-direction:column;gap:6px;margin-top:2px}
+.cp-starter{text-align:left;font-size:12px;background:#fff;border:1px solid rgba(40,58,30,.15);border-radius:8px;padding:8px 11px;cursor:pointer;color:#1A2816;font-family:inherit;line-height:1.4}
+.cp-starter:hover{background:#E0EDCC;border-color:#3B5E28}
+.cp-foot{flex-shrink:0;border-top:1px solid rgba(40,58,30,.12);padding:10px;display:flex;gap:8px;background:#fff}
+.cp-input{flex:1;font-size:13px;padding:9px 11px;border:1px solid rgba(40,58,30,.22);border-radius:8px;font-family:inherit;resize:none;max-height:90px;outline:none}
+.cp-input:focus{border-color:#3B5E28}
+.cp-send{background:#3B5E28;color:#fff;border:none;border-radius:8px;padding:0 15px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;flex-shrink:0}
+.cp-send:disabled{opacity:.5;cursor:default}
+.cp-disclaimer{font-size:9px;color:#9AA295;text-align:center;padding:0 10px 7px;background:#fff}
+@media(max-width:480px){#copilot-panel{width:100vw;height:100vh;max-height:100vh;bottom:0;right:0;border-radius:0}}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="logo-box"><span>HF</span></div>
+  <div class="hdr-sep"></div>
+  <div>
+    <div class="brand-name">HORMEL FOODS</div>
+    <div class="brand-sub">Transportation Cost Intelligence &nbsp;&middot;&nbsp; CPG Freight Market Signals &nbsp;&middot;&nbsp; Warehousing</div>
+  </div>
+  <div class="hdr-right">
+    <div class="hdr-ts">
+      <div class="lbl">Last Updated</div>
+      <div class="val" id="last-upd">Baseline Data</div>
+    </div>
+    <div style="text-align:right;padding:0 8px">
+      <div class="lbl" style="font-size:9px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.07em">Next Refresh</div>
+      <div class="val" id="next-ref">-- --</div>
+    </div>
+    <button class="rbtn" id="rbtn" onclick="loadData(true)"><span class="rdot" id="rdot"></span><span id="rlbl">REFRESH NOW</span></button>
+    <span class="aclabel">accenture</span>
+    <div class="avatar">RR</div>
+    <button onclick="window.print()" title="Print / Export PDF" style="background:rgba(255,255,255,.1);border:.5px solid rgba(255,255,255,.2);border-radius:4px;padding:5px 9px;color:rgba(255,255,255,.55);font-size:11px;cursor:pointer;font-family:inherit;margin-left:2px" class="no-print">&#128438;</button>
+  </div>
+</div>
+<div class="tabs">
+<button class="tbtn ag" data-tab="overview" onclick="switchTab('overview')">Overview</button><button class="tbtn" data-tab="signals" onclick="switchTab('signals')">Market Signals</button><button class="tbtn" data-tab="network" onclick="switchTab('network')">My Network</button><button class="tbtn" data-tab="actions" onclick="switchTab('actions')">Action Hub <span id="actions-badge" style="display:none;background:#C83020;color:#fff;border-radius:9px;padding:1px 6px;font-size:9px;font-weight:700;margin-left:3px"></span></button><button class="tbtn" data-tab="forecast" onclick="switchTab('forecast')">Rate Outlook</button><button class="tbtn" data-tab="sources" onclick="switchTab('sources')">Sources</button>
+  <div class="tsep"></div>
+  <span style="font-size:10px;font-weight:700;color:#7A8575;text-transform:uppercase;letter-spacing:.1em;flex-shrink:0;padding-right:2px">MODE</span>
+  <button class="tbtn ag" id="tm-ALL" onclick="setModeF('ALL')">All</button>
+  <button class="tbtn" id="tm-REEFER" onclick="setModeF('REEFER')">Reefer TL</button>
+  <button class="tbtn" id="tm-DRYVAN" onclick="setModeF('DRYVAN')">Dry Van</button>
+  <button class="tbtn" id="tm-OCEAN" onclick="setModeF('OCEAN')">Ocean FCL</button>
+  <button class="tbtn" id="tm-LTL" onclick="setModeF('LTL')">LTL</button>
+  <div class="tsep"></div>
+  <span style="font-size:10px;font-weight:700;color:#7A8575;text-transform:uppercase;letter-spacing:.1em;flex-shrink:0;padding-right:2px">RISK</span>
+  <button class="tbtn" id="tr-ALL" onclick="setRiskF('ALL')">All Risk</button>
+  <button class="tbtn" id="tr-HIGH" onclick="setRiskF('HIGH RISK')">High Risk</button>
+  <button class="tbtn ao" id="tr-WATCH" onclick="setRiskF('WATCH')">Watch</button>
+  <button class="tbtn" id="tr-EASE" onclick="setRiskF('EASING')">Easing</button>
+</div>
+<div class="ticker-wrap"><div class="ticker-inner"><span style="font-size:12px;color:rgba(255,255,255,.7);margin-right:30px;flex-shrink:0">Reefer TL&ensp;<span style="color:#F4A06A;font-weight:600">&#9650;$3.47/mi 8.2%</span></span><span style="font-size:12px;color:rgba(255,255,255,.7);margin-right:30px;flex-shrink:0">Dry Van TL&ensp;<span style="color:#F4A06A;font-weight:600">&#9650;$2.84/mi 5.4%</span></span><span style="font-size:12px;color:rgba(255,255,255,.7);margin-right:30px;flex-shrink:0">Ocean FCL&ensp;<span style="color:#8FCA50;font-weight:600">&#9660;$3,240/FEU 8.3%</span></span><span style="font-size:12px;color:rgba(255,255,255,.7);margin-right:30px;flex-shrink:0">LTL&ensp;<span style="color:#8FCA50;font-weight:600">&#9660;$98.4/cwt 1.2%</span></span><span style="font-size:12px;color:rgba(255,255,255,.7);margin-right:30px;flex-shrink:0">Intermodal&ensp;<span style="color:#F4A06A;font-weight:600">&#9650;$2.18/mi 3.1%</span></span><span style="font-size:12px;color:rgba(255,255,255,.7);margin-right:30px;flex-shrink:0">Air Freight&ensp;<span style="color:#F4A06A;font-weight:600">&#9650;$4.82/kg 4.2%</span></span><span style="font-size:12px;color:rgba(255,255,255,.7);margin-right:30px;flex-shrink:0">Rail&ensp;<span style="color:#F4A06A;font-weight:600">&#9650;$1.92/mi 0.9%</span></span><span style="font-size:12px;color:rgba(255,255,255,.7);margin-right:30px;flex-shrink:0">Parcel&ensp;<span style="color:#8FCA50;font-weight:600">&#9660;$8.94/pkg 0.6%</span></span><span style="font-size:12px;color:rgba(255,255,255,.7);margin-right:30px;flex-shrink:0">HTCI&ensp;<span style="color:#F4A06A;font-weight:600">&#9650;847.3 pts 2.4%</span></span><span style="font-size:12px;color:rgba(255,255,255,.7);margin-right:30px;flex-shrink:0">Diesel Avg&ensp;<span style="color:#F4A06A;font-weight:600">&#9650;$3.82/gal 1.9%</span></span><span style="font-size:12px;color:rgba(255,255,255,.7);margin-right:30px;flex-shrink:0">Reefer L:T&ensp;<span style="color:#F4A06A;font-weight:600">&#9650;8.2</span></span><span style="font-size:12px;color:rgba(255,255,255,.7);margin-right:30px;flex-shrink:0">Tender Rej.&ensp;<span style="color:#F4A06A;font-weight:600">&#9650;18.4%</span></span><span style="font-size:12px;color:rgba(255,255,255,.7);margin-right:30px;flex-shrink:0">OTIF Walmart&ensp;<span style="color:#8FCA50;font-weight:600">&#9660;94.2%</span></span><span style="font-size:12px;color:rgba(255,255,255,.7);margin-right:30px;flex-shrink:0">Cold Storage&ensp;<span style="color:#8FCA50;font-weight:600">&#9660;82%</span></span><span style="font-size:12px;color:rgba(255,255,255,.7);margin-right:30px;flex-shrink:0">Reefer TL&ensp;<span style="color:#F4A06A;font-weight:600">&#9650;$3.47/mi 8.2%</span></span><span style="font-size:12px;color:rgba(255,255,255,.7);margin-right:30px;flex-shrink:0">Dry Van TL&ensp;<span style="color:#F4A06A;font-weight:600">&#9650;$2.84/mi 5.4%</span></span><span style="font-size:12px;color:rgba(255,255,255,.7);margin-right:30px;flex-shrink:0">Ocean FCL&ensp;<span style="color:#8FCA50;font-weight:600">&#9660;$3,240/FEU 8.3%</span></span><span style="font-size:12px;color:rgba(255,255,255,.7);margin-right:30px;flex-shrink:0">LTL&ensp;<span style="color:#8FCA50;font-weight:600">&#9660;$98.4/cwt 1.2%</span></span><span style="font-size:12px;color:rgba(255,255,255,.7);margin-right:30px;flex-shrink:0">Intermodal&ensp;<span style="color:#F4A06A;font-weight:600">&#9650;$2.18/mi 3.1%</span></span><span style="font-size:12px;color:rgba(255,255,255,.7);margin-right:30px;flex-shrink:0">Air Freight&ensp;<span style="color:#F4A06A;font-weight:600">&#9650;$4.82/kg 4.2%</span></span><span style="font-size:12px;color:rgba(255,255,255,.7);margin-right:30px;flex-shrink:0">Rail&ensp;<span style="color:#F4A06A;font-weight:600">&#9650;$1.92/mi 0.9%</span></span><span style="font-size:12px;color:rgba(255,255,255,.7);margin-right:30px;flex-shrink:0">Parcel&ensp;<span style="color:#8FCA50;font-weight:600">&#9660;$8.94/pkg 0.6%</span></span><span style="font-size:12px;color:rgba(255,255,255,.7);margin-right:30px;flex-shrink:0">HTCI&ensp;<span style="color:#F4A06A;font-weight:600">&#9650;847.3 pts 2.4%</span></span><span style="font-size:12px;color:rgba(255,255,255,.7);margin-right:30px;flex-shrink:0">Diesel Avg&ensp;<span style="color:#F4A06A;font-weight:600">&#9650;$3.82/gal 1.9%</span></span><span style="font-size:12px;color:rgba(255,255,255,.7);margin-right:30px;flex-shrink:0">Reefer L:T&ensp;<span style="color:#F4A06A;font-weight:600">&#9650;8.2</span></span><span style="font-size:12px;color:rgba(255,255,255,.7);margin-right:30px;flex-shrink:0">Tender Rej.&ensp;<span style="color:#F4A06A;font-weight:600">&#9650;18.4%</span></span><span style="font-size:12px;color:rgba(255,255,255,.7);margin-right:30px;flex-shrink:0">OTIF Walmart&ensp;<span style="color:#8FCA50;font-weight:600">&#9660;94.2%</span></span><span style="font-size:12px;color:rgba(255,255,255,.7);margin-right:30px;flex-shrink:0">Cold Storage&ensp;<span style="color:#8FCA50;font-weight:600">&#9660;82%</span></span></div></div>
+<div class="body">
+<div class="alert a-red" id="aerr"><span>&#9888;</span><span id="aerr-txt"></span></div>
+<div class="alert a-green" id="anote"><span>&#128225;</span><span id="anote-txt"></span></div>
+
+<!-- escalation alert banner — shown when KPI thresholds are breached -->
+<div id="esc-banner" style="display:none;background:#C83020;color:#fff;padding:8px 20px;font-size:12px;font-weight:600;display:none;align-items:center;gap:10px;cursor:pointer" onclick="switchTab('actions')">
+  <span style="font-size:15px">&#9888;</span>
+  <span id="esc-banner-txt"></span>
+  <span style="margin-left:auto;font-size:10px;text-decoration:underline">View Action Hub →</span>
+</div>
+<div id="pane-overview" class="tp" style="display:block">
+
+<div class="htci-card">
+  <div>
+    <div style="font-size:10px;font-weight:700;color:#3B5E28;text-transform:uppercase;letter-spacing:.12em;margin-bottom:5px">Hormel Transportation Cost Index (HTCI)</div>
+    <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+      <span style="font-size:32px;font-weight:700;font-family:monospace;color:#1A2816">847.3</span>
+      <span style="font-size:15px;font-weight:700;font-family:monospace;color:#C83020">&#9650; +2.4%</span>
+      <span style="font-size:11px;color:#7A8575">5 of 8 modes rising &middot; 30-day change &middot; Tightening market</span>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;flex-shrink:0;min-width:420px">
+    <div style="background:#FDE8E5;border-radius:4px;padding:10px 12px;border-left:3px solid #C83020"><p style="font-size:9px;color:#A02010;text-transform:uppercase;letter-spacing:.07em;margin:0 0 3px;font-weight:700">Monthly extra cost</p><p style="font-size:16px;font-weight:700;font-family:monospace;color:#A02010;margin:0">+$420K</p><p style="font-size:9px;color:#A02010;margin:1px 0 0">vs budget baseline</p></div>
+    <div style="background:#FDE8E5;border-radius:4px;padding:10px 12px;border-left:3px solid #C83020"><p style="font-size:9px;color:#A02010;text-transform:uppercase;letter-spacing:.07em;margin:0 0 3px;font-weight:700">Worst headwind</p><p style="font-size:16px;font-weight:700;font-family:monospace;color:#A02010;margin:0">Reefer TL</p><p style="font-size:9px;color:#A02010;margin:1px 0 0">+8.2% &middot; Applegate exposed</p></div>
+    <div style="background:#E0EDCC;border-radius:4px;padding:10px 12px;border-left:3px solid #3B5E28"><p style="font-size:9px;color:#2E4A20;text-transform:uppercase;letter-spacing:.07em;margin:0 0 3px;font-weight:700">Best tailwind</p><p style="font-size:16px;font-weight:700;font-family:monospace;color:#2E4A20;margin:0">Ocean FCL</p><p style="font-size:9px;color:#2E4A20;margin:1px 0 0">-8.3% &middot; Buy window open</p></div>
+    <div style="background:#FDE8E5;border-radius:4px;padding:10px 12px;border-left:3px solid #C83020"><p style="font-size:9px;color:#A02010;text-transform:uppercase;letter-spacing:.07em;margin:0 0 3px;font-weight:700">OTIF Alert</p><p style="font-size:16px;font-weight:700;font-family:monospace;color:#A02010;margin:0">94.2%</p><p style="font-size:9px;color:#A02010;margin:1px 0 0">Walmart target: 98.5%</p></div>
+  </div>
+</div>
+<div class="intel-card">
+  <div class="intel-lbl">Intelligence Summary</div>
+  <div class="intel-text" id="intel-txt">Reefer TL spot rates are up 8.2% over 30 days to $3.47/mi with load-to-truck ratios at 8.2 -- a critical level -- driven by Q3 produce season competing with Applegate and Hormel refrigerated outbound from Austin MN. Hurricane Beryl is tracking the Gulf Coast with 78% disruption probability posing $2.8-4.2M exposure to refrigerated outbound lanes. Panama Canal remains constrained adding $400-600/FEU on SPAM ingredient imports while ocean FCL has softened 8.3% creating a Q4 ingredient buying window before Asia peak loading begins August 1. OTIF at Walmart is 94.2% vs. the 98.5% target -- in penalty territory -- adding urgency to reefer capacity actions.</div>
+</div>
+<p class="sec-hdr">Transportation Market Rates -- 8 Modes</p>
+<div class="modes-grid"><div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-left:3px solid #C83020;border-radius:4px;padding:12px 13px">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;gap:6px">
+    <div><p style="font-size:11px;font-weight:700;color:#1A2816;margin:0 0 2px">Reefer TL</p><p style="font-size:9px;color:#7A8575;margin:0;line-height:1.3">Applegate + Hormel Refrigerated</p></div>
+    <div style="flex-shrink:0"><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;background:#FDE8E5;color:#A02010">&#9650; HEADWIND</span></div>
+  </div>
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:6px;margin-bottom:8px">
+    <div>
+      <p style="font-size:20px;font-weight:700;font-family:monospace;color:#1A2816;margin:0 0 1px;line-height:1">$3.47/mi</p>
+      <span style="font-size:12px;font-weight:700;font-family:monospace;color:#C83020">&#9650;8.2% <span style="font-size:10px;font-weight:400;color:#7A8575">30D</span></span>
+    </div>
+    <svg width="80" height="28" viewBox="0 0 80 28" style="display:block;overflow:visible;flex-shrink:0"><polyline points="0.0,26.0 7.3,23.4 14.5,20.8 21.8,18.2 29.1,15.6 36.4,14.3 43.6,12.4 50.9,9.8 58.2,7.2 65.5,5.2 72.7,3.3 80.0,2.0" fill="none" stroke="#C83020" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </div>
+  <div style="display:flex;align-items:center;justify-content:space-between;padding-top:7px;border-top:1px solid rgba(40,58,30,.08);gap:4px;flex-wrap:wrap">
+    <span style="font-size:9px;color:#7A8575">DAT Reefer</span>
+    <span style="font-size:9px;color:#7A8575">L:T <strong style="color:#C83020">8.2</strong></span>
+    <span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;background:#FDE8E5;color:#A02010">HIGH</span>
+  </div>
+</div>
+<div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-left:3px solid #E07828;border-radius:4px;padding:12px 13px">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;gap:6px">
+    <div><p style="font-size:11px;font-weight:700;color:#1A2816;margin:0 0 2px">Dry Van TL</p><p style="font-size:9px;color:#7A8575;margin:0;line-height:1.3">SPAM, Canned Goods, Shelf-Stable</p></div>
+    <div style="flex-shrink:0"><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;background:#FDE8E5;color:#A02010">&#9650; HEADWIND</span></div>
+  </div>
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:6px;margin-bottom:8px">
+    <div>
+      <p style="font-size:20px;font-weight:700;font-family:monospace;color:#1A2816;margin:0 0 1px;line-height:1">$2.84/mi</p>
+      <span style="font-size:12px;font-weight:700;font-family:monospace;color:#C83020">&#9650;5.4% <span style="font-size:10px;font-weight:400;color:#7A8575">30D</span></span>
+    </div>
+    <svg width="80" height="28" viewBox="0 0 80 28" style="display:block;overflow:visible;flex-shrink:0"><polyline points="0.0,26.0 7.3,23.8 14.5,20.5 21.8,17.3 29.1,15.1 36.4,16.2 43.6,12.9 50.9,9.6 58.2,6.4 65.5,5.3 72.7,3.1 80.0,2.0" fill="none" stroke="#C83020" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </div>
+  <div style="display:flex;align-items:center;justify-content:space-between;padding-top:7px;border-top:1px solid rgba(40,58,30,.08);gap:4px;flex-wrap:wrap">
+    <span style="font-size:9px;color:#7A8575">DAT Dry Van</span>
+    <span style="font-size:9px;color:#7A8575">L:T <strong style="color:#E07828">5.8</strong></span>
+    <span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;background:#FEF0E5;color:#B85A18">WATCH</span>
+  </div>
+</div>
+<div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-left:3px solid #3B5E28;border-radius:4px;padding:12px 13px">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;gap:6px">
+    <div><p style="font-size:11px;font-weight:700;color:#1A2816;margin:0 0 2px">LTL</p><p style="font-size:9px;color:#7A8575;margin:0;line-height:1.3">Secondary & DSD Distribution</p></div>
+    <div style="flex-shrink:0"><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;background:#E0EDCC;color:#2E4A20">&#9660; TAILWIND</span></div>
+  </div>
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:6px;margin-bottom:8px">
+    <div>
+      <p style="font-size:20px;font-weight:700;font-family:monospace;color:#1A2816;margin:0 0 1px;line-height:1">$98.4/cwt</p>
+      <span style="font-size:12px;font-weight:700;font-family:monospace;color:#3B5E28">&#9660;-1.2% <span style="font-size:10px;font-weight:400;color:#7A8575">30D</span></span>
+    </div>
+    <svg width="80" height="28" viewBox="0 0 80 28" style="display:block;overflow:visible;flex-shrink:0"><polyline points="0.0,6.2 7.3,2.0 14.5,4.8 21.8,9.1 29.1,13.3 36.4,16.1 43.6,18.9 50.9,18.9 58.2,21.8 65.5,24.6 72.7,24.6 80.0,26.0" fill="none" stroke="#3B5E28" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </div>
+  <div style="display:flex;align-items:center;justify-content:space-between;padding-top:7px;border-top:1px solid rgba(40,58,30,.08);gap:4px;flex-wrap:wrap">
+    <span style="font-size:9px;color:#7A8575">Cass Index</span>
+    
+    <span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;background:#E0EDCC;color:#2E4A20">EASING</span>
+  </div>
+</div>
+<div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-left:3px solid #E07828;border-radius:4px;padding:12px 13px">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;gap:6px">
+    <div><p style="font-size:11px;font-weight:700;color:#1A2816;margin:0 0 2px">Intermodal</p><p style="font-size:9px;color:#7A8575;margin:0;line-height:1.3">Import Drayage — LA/LB to Midwest</p></div>
+    <div style="flex-shrink:0"><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;background:#FDE8E5;color:#A02010">&#9650; HEADWIND</span></div>
+  </div>
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:6px;margin-bottom:8px">
+    <div>
+      <p style="font-size:20px;font-weight:700;font-family:monospace;color:#1A2816;margin:0 0 1px;line-height:1">$2.18/mi</p>
+      <span style="font-size:12px;font-weight:700;font-family:monospace;color:#C83020">&#9650;3.1% <span style="font-size:10px;font-weight:400;color:#7A8575">30D</span></span>
+    </div>
+    <svg width="80" height="28" viewBox="0 0 80 28" style="display:block;overflow:visible;flex-shrink:0"><polyline points="0.0,26.0 7.3,21.2 14.5,18.8 21.8,16.4 29.1,14.0 36.4,16.4 43.6,11.6 50.9,9.2 58.2,6.8 65.5,4.4 72.7,4.4 80.0,2.0" fill="none" stroke="#C83020" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </div>
+  <div style="display:flex;align-items:center;justify-content:space-between;padding-top:7px;border-top:1px solid rgba(40,58,30,.08);gap:4px;flex-wrap:wrap">
+    <span style="font-size:9px;color:#7A8575">DrayNow / IANA</span>
+    
+    <span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;background:#FEF0E5;color:#B85A18">WATCH</span>
+  </div>
+</div>
+<div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-left:3px solid #E07828;border-radius:4px;padding:12px 13px">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;gap:6px">
+    <div><p style="font-size:11px;font-weight:700;color:#1A2816;margin:0 0 2px">Ocean FCL</p><p style="font-size:9px;color:#7A8575;margin:0;line-height:1.3">SPAM Ingredients — Buy Window Open</p></div>
+    <div style="flex-shrink:0"><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;background:#E0EDCC;color:#2E4A20">&#9660; TAILWIND</span></div>
+  </div>
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:6px;margin-bottom:8px">
+    <div>
+      <p style="font-size:20px;font-weight:700;font-family:monospace;color:#1A2816;margin:0 0 1px;line-height:1">$3,240/FEU</p>
+      <span style="font-size:12px;font-weight:700;font-family:monospace;color:#3B5E28">&#9660;-8.3% <span style="font-size:10px;font-weight:400;color:#7A8575">30D</span></span>
+    </div>
+    <svg width="80" height="28" viewBox="0 0 80 28" style="display:block;overflow:visible;flex-shrink:0"><polyline points="0.0,2.0 7.3,7.8 14.5,11.8 21.8,14.9 29.1,18.0 36.4,20.0 43.6,21.6 50.9,22.9 58.2,24.0 65.5,24.9 72.7,25.6 80.0,26.0" fill="none" stroke="#3B5E28" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </div>
+  <div style="display:flex;align-items:center;justify-content:space-between;padding-top:7px;border-top:1px solid rgba(40,58,30,.08);gap:4px;flex-wrap:wrap">
+    <span style="font-size:9px;color:#7A8575">Drewry WCI</span>
+    
+    <span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;background:#FEF0E5;color:#B85A18">WATCH</span>
+  </div>
+</div>
+<div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-left:3px solid #E07828;border-radius:4px;padding:12px 13px">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;gap:6px">
+    <div><p style="font-size:11px;font-weight:700;color:#1A2816;margin:0 0 2px">Air Freight</p><p style="font-size:9px;color:#7A8575;margin:0;line-height:1.3">Emergency Ingredient Shortfalls</p></div>
+    <div style="flex-shrink:0"><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;background:#FDE8E5;color:#A02010">&#9650; HEADWIND</span></div>
+  </div>
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:6px;margin-bottom:8px">
+    <div>
+      <p style="font-size:20px;font-weight:700;font-family:monospace;color:#1A2816;margin:0 0 1px;line-height:1">$4.82/kg</p>
+      <span style="font-size:12px;font-weight:700;font-family:monospace;color:#C83020">&#9650;4.2% <span style="font-size:10px;font-weight:400;color:#7A8575">30D</span></span>
+    </div>
+    <svg width="80" height="28" viewBox="0 0 80 28" style="display:block;overflow:visible;flex-shrink:0"><polyline points="0.0,26.0 7.3,23.8 14.5,21.6 21.8,20.5 29.1,18.4 36.4,16.2 43.6,14.0 50.9,11.8 58.2,8.5 65.5,5.3 72.7,3.1 80.0,2.0" fill="none" stroke="#C83020" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </div>
+  <div style="display:flex;align-items:center;justify-content:space-between;padding-top:7px;border-top:1px solid rgba(40,58,30,.08);gap:4px;flex-wrap:wrap">
+    <span style="font-size:9px;color:#7A8575">Freightos FAX</span>
+    
+    <span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;background:#FEF0E5;color:#B85A18">WATCH</span>
+  </div>
+</div>
+<div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-left:3px solid #E07828;border-radius:4px;padding:12px 13px">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;gap:6px">
+    <div><p style="font-size:11px;font-weight:700;color:#1A2816;margin:0 0 2px">Rail Carload</p><p style="font-size:9px;color:#7A8575;margin:0;line-height:1.3">Grain & Bulk Ingredient Movements</p></div>
+    <div style="flex-shrink:0"><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;background:#EEF0E6;color:#5A6355">&#8213; NEUTRAL</span></div>
+  </div>
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:6px;margin-bottom:8px">
+    <div>
+      <p style="font-size:20px;font-weight:700;font-family:monospace;color:#1A2816;margin:0 0 1px;line-height:1">$1.92/mi</p>
+      <span style="font-size:12px;font-weight:700;font-family:monospace;color:#C83020">&#9650;0.9% <span style="font-size:10px;font-weight:400;color:#7A8575">30D</span></span>
+    </div>
+    <svg width="80" height="28" viewBox="0 0 80 28" style="display:block;overflow:visible;flex-shrink:0"><polyline points="0.0,26.0 7.3,14.0 14.5,14.0 21.8,14.0 29.1,2.0 36.4,14.0 43.6,14.0 50.9,2.0 58.2,2.0 65.5,2.0 72.7,2.0 80.0,2.0" fill="none" stroke="#C83020" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </div>
+  <div style="display:flex;align-items:center;justify-content:space-between;padding-top:7px;border-top:1px solid rgba(40,58,30,.08);gap:4px;flex-wrap:wrap">
+    <span style="font-size:9px;color:#7A8575">AAR Weekly</span>
+    
+    <span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;background:#EEF0E6;color:#5A6355">STABLE</span>
+  </div>
+</div>
+<div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-left:3px solid #E07828;border-radius:4px;padding:12px 13px">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;gap:6px">
+    <div><p style="font-size:11px;font-weight:700;color:#1A2816;margin:0 0 2px">Parcel / DTC</p><p style="font-size:9px;color:#7A8575;margin:0;line-height:1.3">Hormel.com + Corporate Gifting</p></div>
+    <div style="flex-shrink:0"><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;background:#E0EDCC;color:#2E4A20">&#9660; TAILWIND</span></div>
+  </div>
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:6px;margin-bottom:8px">
+    <div>
+      <p style="font-size:20px;font-weight:700;font-family:monospace;color:#1A2816;margin:0 0 1px;line-height:1">$8.94/pkg</p>
+      <span style="font-size:12px;font-weight:700;font-family:monospace;color:#3B5E28">&#9660;-0.6% <span style="font-size:10px;font-weight:400;color:#7A8575">30D</span></span>
+    </div>
+    <svg width="80" height="28" viewBox="0 0 80 28" style="display:block;overflow:visible;flex-shrink:0"><polyline points="0.0,2.0 7.3,5.0 14.5,5.0 21.8,8.0 29.1,11.0 36.4,14.0 43.6,17.0 50.9,20.0 58.2,23.0 65.5,23.0 72.7,26.0 80.0,26.0" fill="none" stroke="#3B5E28" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </div>
+  <div style="display:flex;align-items:center;justify-content:space-between;padding-top:7px;border-top:1px solid rgba(40,58,30,.08);gap:4px;flex-wrap:wrap">
+    <span style="font-size:9px;color:#7A8575">ShipMatrix</span>
+    
+    <span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;background:#EEF0E6;color:#5A6355">STABLE</span>
+  </div>
+</div></div>
+<p class="sec-hdr">CPG Market Intelligence -- Hormel KPIs</p>
+<div class="factors-box"><div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid rgba(40,58,30,.1);gap:8px"><div style="flex:1;min-width:0"><p style="font-size:11px;color:#1A2816;margin:0 0 1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Load-to-Truck Ratio — Reefer</p><p style="font-size:9px;color:#7A8575;margin:0">DAT &middot; >7.5 = critical</p></div><div style="display:flex;align-items:center;gap:8px;flex-shrink:0"><span style="font-size:12px;font-weight:700;font-family:monospace;color:#1A2816">8.2<span style="font-size:9px;color:#639922;margin-left:3px">&#9679;</span></span><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.07em;background:#FDE8E5;color:#A02010">HIGH</span></div></div>
+<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid rgba(40,58,30,.1);gap:8px"><div style="flex:1;min-width:0"><p style="font-size:11px;color:#1A2816;margin:0 0 1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Load-to-Truck Ratio — Dry Van</p><p style="font-size:9px;color:#7A8575;margin:0">DAT &middot; >6.0 = tight</p></div><div style="display:flex;align-items:center;gap:8px;flex-shrink:0"><span style="font-size:12px;font-weight:700;font-family:monospace;color:#1A2816">5.8<span style="font-size:9px;color:#639922;margin-left:3px">&#9679;</span></span><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.07em;background:#FEF0E5;color:#B85A18">WATCH</span></div></div>
+<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid rgba(40,58,30,.1);gap:8px"><div style="flex:1;min-width:0"><p style="font-size:11px;color:#1A2816;margin:0 0 1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Tender Rejection Rate (TL)</p><p style="font-size:9px;color:#7A8575;margin:0">FreightWaves &middot; <12% = normal market</p></div><div style="display:flex;align-items:center;gap:8px;flex-shrink:0"><span style="font-size:12px;font-weight:700;font-family:monospace;color:#1A2816">18.4%</span><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.07em;background:#FDE8E5;color:#A02010">HIGH</span></div></div>
+<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid rgba(40,58,30,.1);gap:8px"><div style="flex:1;min-width:0"><p style="font-size:11px;color:#1A2816;margin:0 0 1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Contract vs. Spot Spread</p><p style="font-size:9px;color:#7A8575;margin:0">DAT &middot; $0.20 = historical avg</p></div><div style="display:flex;align-items:center;gap:8px;flex-shrink:0"><span style="font-size:12px;font-weight:700;font-family:monospace;color:#1A2816">+$0.38/mi</span><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.07em;background:#FDE8E5;color:#A02010">HIGH</span></div></div>
+<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid rgba(40,58,30,.1);gap:8px"><div style="flex:1;min-width:0"><p style="font-size:11px;color:#1A2816;margin:0 0 1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Walmart OTIF Score</p><p style="font-size:9px;color:#7A8575;margin:0">Hormel Internal &middot; Target: 98.5%  -- PENALTY ZONE</p></div><div style="display:flex;align-items:center;gap:8px;flex-shrink:0"><span style="font-size:12px;font-weight:700;font-family:monospace;color:#1A2816">94.2%</span><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.07em;background:#FDE8E5;color:#A02010">HIGH</span></div></div>
+<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid rgba(40,58,30,.1);gap:8px"><div style="flex:1;min-width:0"><p style="font-size:11px;color:#1A2816;margin:0 0 1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Target OTIF Compliance</p><p style="font-size:9px;color:#7A8575;margin:0">Hormel Internal &middot; Target: 98.0%</p></div><div style="display:flex;align-items:center;gap:8px;flex-shrink:0"><span style="font-size:12px;font-weight:700;font-family:monospace;color:#1A2816">96.1%</span><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.07em;background:#FEF0E5;color:#B85A18">WATCH</span></div></div>
+<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid rgba(40,58,30,.1);gap:8px"><div style="flex:1;min-width:0"><p style="font-size:11px;color:#1A2816;margin:0 0 1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Cold Storage Availability</p><p style="font-size:9px;color:#7A8575;margin:0">USDA / IARW &middot; <85% = constrained</p></div><div style="display:flex;align-items:center;gap:8px;flex-shrink:0"><span style="font-size:12px;font-weight:700;font-family:monospace;color:#1A2816">82%</span><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.07em;background:#FDE8E5;color:#A02010">HIGH</span></div></div>
+<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid rgba(40,58,30,.1);gap:8px"><div style="flex:1;min-width:0"><p style="font-size:11px;color:#1A2816;margin:0 0 1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Case Fill Rate -- DC Level</p><p style="font-size:9px;color:#7A8575;margin:0">Hormel Internal &middot; Target: 99.0%</p></div><div style="display:flex;align-items:center;gap:8px;flex-shrink:0"><span style="font-size:12px;font-weight:700;font-family:monospace;color:#1A2816">97.8%</span><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.07em;background:#FEF0E5;color:#B85A18">WATCH</span></div></div>
+<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid rgba(40,58,30,.1);gap:8px"><div style="flex:1;min-width:0"><p style="font-size:11px;color:#1A2816;margin:0 0 1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Diesel Fuel Surcharge</p><p style="font-size:9px;color:#7A8575;margin:0">EIA &middot; $0.32 = 12-mo avg</p></div><div style="display:flex;align-items:center;gap:8px;flex-shrink:0"><span style="font-size:12px;font-weight:700;font-family:monospace;color:#1A2816">$0.42/mi<span style="font-size:9px;color:#639922;margin-left:3px">&#9679;</span></span><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.07em;background:#FEF0E5;color:#B85A18">WATCH</span></div></div>
+<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid rgba(40,58,30,.1);gap:8px"><div style="flex:1;min-width:0"><p style="font-size:11px;color:#1A2816;margin:0 0 1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Applegate Cold Chain Failures</p><p style="font-size:9px;color:#7A8575;margin:0">Internal / Quality &middot; Target: <0.5%</p></div><div style="display:flex;align-items:center;gap:8px;flex-shrink:0"><span style="font-size:12px;font-weight:700;font-family:monospace;color:#1A2816">1.2%</span><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.07em;background:#FEF0E5;color:#B85A18">WATCH</span></div></div>
+<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid rgba(40,58,30,.1);gap:8px"><div style="flex:1;min-width:0"><p style="font-size:11px;color:#1A2816;margin:0 0 1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Q4 Holiday Peak Window</p><p style="font-size:9px;color:#7A8575;margin:0">Hormel Planning &middot; Thanksgiving + Christmas build</p></div><div style="display:flex;align-items:center;gap:8px;flex-shrink:0"><span style="font-size:12px;font-weight:700;font-family:monospace;color:#1A2816">89 days</span><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.07em;background:#FEF0E5;color:#B85A18">WATCH</span></div></div>
+<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;gap:8px"><div style="flex:1;min-width:0"><p style="font-size:11px;color:#1A2816;margin:0 0 1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Q3 Produce Season Competition</p><p style="font-size:9px;color:#7A8575;margin:0">USDA AMS &middot; Jul 15 - Sep 30 reefer crunch</p></div><div style="display:flex;align-items:center;gap:8px;flex-shrink:0"><span style="font-size:12px;font-weight:700;font-family:monospace;color:#1A2816">ACTIVE</span><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.07em;background:#FDE8E5;color:#A02010">HIGH</span></div></div></div>
+</div>
+<div id="pane-signals" class="tp" style="display:none">
+
+<div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;flex-wrap:wrap">
+  <span style="font-size:10px;font-weight:700;color:#7A8575;text-transform:uppercase;letter-spacing:.1em;margin-right:4px">Direction:</span>
+  <button class="stbtn sa" id="td-ALL" onclick="setDirF('ALL')">All Signals</button>
+  <button class="stbtn" id="td-HEADWIND" onclick="setDirF('HEADWIND')">&#9650; Headwinds</button>
+  <button class="stbtn" id="td-TAILWIND" onclick="setDirF('TAILWIND')">&#9660; Tailwinds</button>
+</div>
+<div class="sigs-grid"><div class="sig-card" data-modes="REEFER" data-risk="HIGH RISK" data-dir="HEADWIND" style="background:#fff;border:1px solid rgba(40,58,30,.15);border-left:3px solid #C83020;border-radius:4px;padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+    <div style="display:flex;gap:5px;flex-wrap:wrap"><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;background:#FDE8E5;color:#A02010">REEFER TL</span><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;background:#FDE8E5;color:#A02010">&#9650; HEADWIND</span></div>
+    <span style="font-size:10px;color:#7A8575;white-space:nowrap;flex-shrink:0">Next 14 days</span>
+  </div>
+  <p style="font-size:13px;font-weight:700;color:#1A2816;line-height:1.35">Reefer Capacity Crunch -- Applegate and Hormel Refrigerated Outbound</p>
+  <div style="border-radius:3px;padding:8px 10px;font-size:11px;font-family:monospace;line-height:1.55;background:#FDE8E5;color:#A02010">DAT Reefer Spot: $3.82/mi (+9.2% 30D) | L:T Ratio: 8.6 (Critical) | Produce Season + Hurricane = Compounding Risk</div>
+  <p style="font-size:12px;color:#4A5548;line-height:1.6">Q3 produce harvest season is competing directly with Applegate and Hormel refrigerated outbound for the same reefer pool -- and hurricane season is amplifying the squeeze. Load-to-truck ratios at 8.6 are well above the 7.5 critical threshold. Spot rates are forecast to increase an additional 12-18% by August 15. Every week of delay in locking capacity costs approximately $40-80K in avoidable spot premium.</p>
+  <div style="display:flex;gap:5px;flex-wrap:wrap"><span style="font-size:10px;padding:2px 9px;border-radius:12px;font-weight:500;background:#E0EDCC;color:#2E4A20">Case Fill</span> <span style="font-size:10px;padding:2px 9px;border-radius:12px;font-weight:500;background:#FEF0E5;color:#B85A18">Margin</span> <span style="font-size:10px;padding:2px 9px;border-radius:12px;font-weight:500;background:#EEF0E6;color:#4A5548">Applegate</span> <span style="font-size:10px;padding:2px 9px;border-radius:12px;font-weight:500;background:#EEF0E6;color:#4A5548">Jennie-O</span></div>
+  <div style="border-top:1px solid rgba(40,58,30,.12);padding-top:8px">
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="#7A8575" stroke-width="1.5"><path d="M1 13h12M1 1h12"/></svg><span style="font-size:9px;font-weight:700;color:#7A8575;text-transform:uppercase;letter-spacing:.1em">Data Sources</span></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(40,58,30,.08);font-size:11px"><div style="display:flex;align-items:center;gap:6px;color:#4A5548"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="#7A8575" stroke-width="1.5"><polyline points="1,10 4,6 7,8 10,4 13,5"/></svg>DAT Freight & Analytics</div><span style="color:#7A8575;font-size:10px;font-family:monospace">Thu, Jun 18, 2026</span></div><div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(40,58,30,.08);font-size:11px"><div style="display:flex;align-items:center;gap:6px;color:#4A5548"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="#7A8575" stroke-width="1.5"><polyline points="1,10 4,6 7,8 10,4 13,5"/></svg>EIA Diesel Fuel Prices</div><span style="color:#7A8575;font-size:10px;font-family:monospace">Thu, Jun 18, 2026</span></div>
+  </div>
+</div>
+<div class="sig-card" data-modes="REEFER DRYVAN" data-risk="HIGH RISK" data-dir="HEADWIND" style="background:#fff;border:1px solid rgba(40,58,30,.15);border-left:3px solid #C83020;border-radius:4px;padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+    <div style="display:flex;gap:5px;flex-wrap:wrap"><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;background:#FDE8E5;color:#A02010">LOGISTICS</span><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;background:#FDE8E5;color:#A02010">&#9650; HEADWIND</span></div>
+    <span style="font-size:10px;color:#7A8575;white-space:nowrap;flex-shrink:0">Next 48-72 hrs</span>
+  </div>
+  <p style="font-size:13px;font-weight:700;color:#1A2816;line-height:1.35">Hurricane Beryl -- Austin MN Outbound and Southeast Lanes at Risk</p>
+  <div style="border-radius:3px;padding:8px 10px;font-size:11px;font-family:monospace;line-height:1.55;background:#FDE8E5;color:#A02010">Gulf Coast Disruption Probability: 78% | Hormel Refrigerated Exposure: $2.8-4.2M | Storm Track: I-10 Corridor</div>
+  <p style="font-size:12px;color:#4A5548;line-height:1.6">Hurricane Beryl is tracking the I-10 corridor -- a critical artery for Austin MN and Fremont NE outbound to Texas and Southeast DCs. Reefer capacity will evaporate in the affected region within 24 hours of landfall. Jennie-O turkey shipments and Hormel perishable outbound are highest exposure. Pre-position 5-day safety stock at downstream DCs immediately and lock emergency capacity today.</p>
+  <div style="display:flex;gap:5px;flex-wrap:wrap"><span style="font-size:10px;padding:2px 9px;border-radius:12px;font-weight:500;background:#E0EDCC;color:#2E4A20">Case Fill</span> <span style="font-size:10px;padding:2px 9px;border-radius:12px;font-weight:500;background:#EEF0E6;color:#4A5548">All Brands</span> <span style="font-size:10px;padding:2px 9px;border-radius:12px;font-weight:500;background:#FEF0E5;color:#B85A18">Revenue</span></div>
+  <div style="border-top:1px solid rgba(40,58,30,.12);padding-top:8px">
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="#7A8575" stroke-width="1.5"><path d="M1 13h12M1 1h12"/></svg><span style="font-size:9px;font-weight:700;color:#7A8575;text-transform:uppercase;letter-spacing:.1em">Data Sources</span></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(40,58,30,.08);font-size:11px"><div style="display:flex;align-items:center;gap:6px;color:#4A5548"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="#7A8575" stroke-width="1.5"><polyline points="1,10 4,6 7,8 10,4 13,5"/></svg>NOAA National Hurricane Center</div><span style="color:#7A8575;font-size:10px;font-family:monospace">Thu, Jun 18, 2026</span></div><div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(40,58,30,.08);font-size:11px"><div style="display:flex;align-items:center;gap:6px;color:#4A5548"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="#7A8575" stroke-width="1.5"><polyline points="1,10 4,6 7,8 10,4 13,5"/></svg>DAT Freight & Analytics</div><span style="color:#7A8575;font-size:10px;font-family:monospace">Thu, Jun 18, 2026</span></div>
+  </div>
+</div>
+<div class="sig-card" data-modes="OCEAN" data-risk="HIGH RISK" data-dir="HEADWIND" style="background:#fff;border:1px solid rgba(40,58,30,.15);border-left:3px solid #C83020;border-radius:4px;padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+    <div style="display:flex;gap:5px;flex-wrap:wrap"><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;background:#FDE8E5;color:#A02010">OCEAN FCL</span><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;background:#FDE8E5;color:#A02010">&#9650; HEADWIND</span></div>
+    <span style="font-size:10px;color:#7A8575;white-space:nowrap;flex-shrink:0">Active -- 30 days</span>
+  </div>
+  <p style="font-size:13px;font-weight:700;color:#1A2816;line-height:1.35">Panama Canal Constraints -- SPAM Ingredient Import Lead Times at Risk</p>
+  <div style="border-radius:3px;padding:8px 10px;font-size:11px;font-family:monospace;line-height:1.55;background:#FDE8E5;color:#A02010">Panama Surcharge Active: $400-600/FEU | Lead Time Impact: +8-12 days | Drewry WCI Shanghai-LA: $3,240/FEU</div>
+  <p style="font-size:12px;color:#4A5548;line-height:1.6">Panama Canal draft restrictions are adding $400-600/FEU in surcharges and 8-12 days to ingredient import lead times. SPAM packaging, soy, and specialty ingredients from Asia are directly affected. If Q4 holiday production build lead times slip, Hormel faces a manufacturing gap in September. Activating Suez Canal rerouting for all Asia-origin containers is the correct response today.</p>
+  <div style="display:flex;gap:5px;flex-wrap:wrap"><span style="font-size:10px;padding:2px 9px;border-radius:12px;font-weight:500;background:#FEF0E5;color:#B85A18">Margin</span> <span style="font-size:10px;padding:2px 9px;border-radius:12px;font-weight:500;background:#EEF0E6;color:#4A5548">SPAM</span> <span style="font-size:10px;padding:2px 9px;border-radius:12px;font-weight:500;background:#E0EDCC;color:#2E4A20">Case Fill</span></div>
+  <div style="border-top:1px solid rgba(40,58,30,.12);padding-top:8px">
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="#7A8575" stroke-width="1.5"><path d="M1 13h12M1 1h12"/></svg><span style="font-size:9px;font-weight:700;color:#7A8575;text-transform:uppercase;letter-spacing:.1em">Data Sources</span></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(40,58,30,.08);font-size:11px"><div style="display:flex;align-items:center;gap:6px;color:#4A5548"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="#7A8575" stroke-width="1.5"><polyline points="1,10 4,6 7,8 10,4 13,5"/></svg>Drewry World Container Index</div><span style="color:#7A8575;font-size:10px;font-family:monospace">Thu, Jun 18, 2026</span></div><div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(40,58,30,.08);font-size:11px"><div style="display:flex;align-items:center;gap:6px;color:#4A5548"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="#7A8575" stroke-width="1.5"><polyline points="1,10 4,6 7,8 10,4 13,5"/></svg>Panama Canal Authority</div><span style="color:#7A8575;font-size:10px;font-family:monospace">Thu, Jun 18, 2026</span></div>
+  </div>
+</div>
+<div class="sig-card" data-modes="DRYVAN" data-risk="WATCH" data-dir="HEADWIND" style="background:#fff;border:1px solid rgba(40,58,30,.15);border-left:3px solid #E07828;border-radius:4px;padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+    <div style="display:flex;gap:5px;flex-wrap:wrap"><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;background:#FEF0E5;color:#B85A18">DRY VAN TL</span><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;background:#FDE8E5;color:#A02010">&#9650; HEADWIND</span></div>
+    <span style="font-size:10px;color:#7A8575;white-space:nowrap;flex-shrink:0">Next 14 days</span>
+  </div>
+  <p style="font-size:13px;font-weight:700;color:#1A2816;line-height:1.35">Midwest Dry Van Tightens -- Austin MN and Fremont NE Hub Exposure</p>
+  <div style="border-radius:3px;padding:8px 10px;font-size:11px;font-family:monospace;line-height:1.55;background:#FEF0E5;color:#B85A18">DAT Dry Van Spot: $2.84/mi (+5.4% 30D) | Tender Rejection Rate: 18.4% | Driver Utilization: 87.2%</div>
+  <p style="font-size:12px;color:#4A5548;line-height:1.6">Dry van spot rates are rising steadily around Austin MN and Fremont NE, driven by seasonal demand and agricultural product movement. SPAM, canned goods, and Justin's nut butter distribution are affected. Tender rejection rates are building toward critical levels. LTL is currently soft (down 1.2%) -- modal shift opportunity exists for non-time-critical orders over 5,000 lbs.</p>
+  <div style="display:flex;gap:5px;flex-wrap:wrap"><span style="font-size:10px;padding:2px 9px;border-radius:12px;font-weight:500;background:#FEF0E5;color:#B85A18">Margin</span> <span style="font-size:10px;padding:2px 9px;border-radius:12px;font-weight:500;background:#E0EDCC;color:#2E4A20">Case Fill</span> <span style="font-size:10px;padding:2px 9px;border-radius:12px;font-weight:500;background:#EEF0E6;color:#4A5548">SPAM</span></div>
+  <div style="border-top:1px solid rgba(40,58,30,.12);padding-top:8px">
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="#7A8575" stroke-width="1.5"><path d="M1 13h12M1 1h12"/></svg><span style="font-size:9px;font-weight:700;color:#7A8575;text-transform:uppercase;letter-spacing:.1em">Data Sources</span></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(40,58,30,.08);font-size:11px"><div style="display:flex;align-items:center;gap:6px;color:#4A5548"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="#7A8575" stroke-width="1.5"><polyline points="1,10 4,6 7,8 10,4 13,5"/></svg>DAT Freight & Analytics</div><span style="color:#7A8575;font-size:10px;font-family:monospace">Thu, Jun 18, 2026</span></div><div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(40,58,30,.08);font-size:11px"><div style="display:flex;align-items:center;gap:6px;color:#4A5548"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="#7A8575" stroke-width="1.5"><polyline points="1,10 4,6 7,8 10,4 13,5"/></svg>FreightWaves SONAR</div><span style="color:#7A8575;font-size:10px;font-family:monospace">Thu, Jun 18, 2026</span></div>
+  </div>
+</div>
+<div class="sig-card" data-modes="DRYVAN" data-risk="WATCH" data-dir="HEADWIND" style="background:#fff;border:1px solid rgba(40,58,30,.15);border-left:3px solid #E07828;border-radius:4px;padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+    <div style="display:flex;gap:5px;flex-wrap:wrap"><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;background:#FEF0E5;color:#B85A18">CROSS-BORDER</span><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;background:#FDE8E5;color:#A02010">&#9650; HEADWIND</span></div>
+    <span style="font-size:10px;color:#7A8575;white-space:nowrap;flex-shrink:0">Escalating</span>
+  </div>
+  <p style="font-size:13px;font-weight:700;color:#1A2816;line-height:1.35">Mexico Cross-Border Saturating -- Monterrey Protein Ingredient Sourcing</p>
+  <div style="border-radius:3px;padding:8px 10px;font-size:11px;font-family:monospace;line-height:1.55;background:#FEF0E5;color:#B85A18">Monterrey-Austin MN Spot: $3,800/load (+9.1% 30D) | Laredo Dray Wait: +2.1 days | L:T: 7.4</div>
+  <p style="font-size:12px;color:#4A5548;line-height:1.6">Nearshoring demand surge is saturating Laredo and El Paso crossing capacity. Hormel protein ingredient sourcing from Monterrey plant partners is experiencing both cost inflation and lead time volatility. The spot rate is forecast to reach $4,200+ per load in 30 days. Converting to a 6-month contract at current rates saves an estimated $280-420K annually.</p>
+  <div style="display:flex;gap:5px;flex-wrap:wrap"><span style="font-size:10px;padding:2px 9px;border-radius:12px;font-weight:500;background:#FEF0E5;color:#B85A18">Margin</span> <span style="font-size:10px;padding:2px 9px;border-radius:12px;font-weight:500;background:#E0EDCC;color:#2E4A20">Case Fill</span></div>
+  <div style="border-top:1px solid rgba(40,58,30,.12);padding-top:8px">
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="#7A8575" stroke-width="1.5"><path d="M1 13h12M1 1h12"/></svg><span style="font-size:9px;font-weight:700;color:#7A8575;text-transform:uppercase;letter-spacing:.1em">Data Sources</span></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(40,58,30,.08);font-size:11px"><div style="display:flex;align-items:center;gap:6px;color:#4A5548"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="#7A8575" stroke-width="1.5"><polyline points="1,10 4,6 7,8 10,4 13,5"/></svg>DAT Cross-Border Index</div><span style="color:#7A8575;font-size:10px;font-family:monospace">Thu, Jun 18, 2026</span></div><div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(40,58,30,.08);font-size:11px"><div style="display:flex;align-items:center;gap:6px;color:#4A5548"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="#7A8575" stroke-width="1.5"><polyline points="1,10 4,6 7,8 10,4 13,5"/></svg>CEVA Logistics Mexico</div><span style="color:#7A8575;font-size:10px;font-family:monospace">Thu, Jun 18, 2026</span></div>
+  </div>
+</div>
+<div class="sig-card" data-modes="OCEAN" data-risk="EASING" data-dir="TAILWIND" style="background:#fff;border:1px solid rgba(40,58,30,.15);border-left:3px solid #3B5E28;border-radius:4px;padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+    <div style="display:flex;gap:5px;flex-wrap:wrap"><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;background:#E0EDCC;color:#2E4A20">OCEAN FCL</span><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;background:#E0EDCC;color:#2E4A20">&#9660; TAILWIND</span></div>
+    <span style="font-size:10px;color:#7A8575;white-space:nowrap;flex-shrink:0">Buy window: 6 weeks</span>
+  </div>
+  <p style="font-size:13px;font-weight:700;color:#1A2816;line-height:1.35">Ocean FCL Rate Softening -- Q4 Ingredient Import Buying Window Now Open</p>
+  <div style="border-radius:3px;padding:8px 10px;font-size:11px;font-family:monospace;line-height:1.55;background:#E0EDCC;color:#2E4A20">Shanghai-LA: $3,240/FEU (-8.3% 30D) | Rotterdam-NY: $2,850/FEU (-2.1% WoW) | Pre-Asia Peak Buying Window</div>
+  <p style="font-size:12px;color:#4A5548;line-height:1.6">Ocean FCL rates have softened 8.3% over 30 days -- the best buying opportunity in 18 months for ingredient imports. This window closes August 1 when Asia peak season loading begins. Hormel Q4 holiday production (SPAM, canned goods, ham) requires ingredient arrivals Sep-Nov. Pre-booking now vs October spot rates could save $0.8-1.4M. Issue RFQ to 3 ocean carriers this week.</p>
+  <div style="display:flex;gap:5px;flex-wrap:wrap"><span style="font-size:10px;padding:2px 9px;border-radius:12px;font-weight:500;background:#FEF0E5;color:#B85A18">Margin</span> <span style="font-size:10px;padding:2px 9px;border-radius:12px;font-weight:500;background:#EEF0E6;color:#4A5548">SPAM</span> <span style="font-size:10px;padding:2px 9px;border-radius:12px;font-weight:500;background:#FEF0E5;color:#B85A18">Revenue</span></div>
+  <div style="border-top:1px solid rgba(40,58,30,.12);padding-top:8px">
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="#7A8575" stroke-width="1.5"><path d="M1 13h12M1 1h12"/></svg><span style="font-size:9px;font-weight:700;color:#7A8575;text-transform:uppercase;letter-spacing:.1em">Data Sources</span></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(40,58,30,.08);font-size:11px"><div style="display:flex;align-items:center;gap:6px;color:#4A5548"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="#7A8575" stroke-width="1.5"><polyline points="1,10 4,6 7,8 10,4 13,5"/></svg>Drewry World Container Index</div><span style="color:#7A8575;font-size:10px;font-family:monospace">Thu, Jun 18, 2026</span></div><div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(40,58,30,.08);font-size:11px"><div style="display:flex;align-items:center;gap:6px;color:#4A5548"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="#7A8575" stroke-width="1.5"><polyline points="1,10 4,6 7,8 10,4 13,5"/></svg>Freightos Baltic Index FBX</div><span style="color:#7A8575;font-size:10px;font-family:monospace">Thu, Jun 18, 2026</span></div>
+  </div>
+</div>
+<div class="sig-card" data-modes="LTL" data-risk="EASING" data-dir="TAILWIND" style="background:#fff;border:1px solid rgba(40,58,30,.15);border-left:3px solid #3B5E28;border-radius:4px;padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+    <div style="display:flex;gap:5px;flex-wrap:wrap"><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;background:#E0EDCC;color:#2E4A20">LTL</span><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;background:#E0EDCC;color:#2E4A20">&#9660; TAILWIND</span></div>
+    <span style="font-size:10px;color:#7A8575;white-space:nowrap;flex-shrink:0">Next 30 days</span>
+  </div>
+  <p style="font-size:13px;font-weight:700;color:#1A2816;line-height:1.35">LTL Rate Relief -- Shelf-Stable Distribution Renegotiation Window</p>
+  <div style="border-radius:3px;padding:8px 10px;font-size:11px;font-family:monospace;line-height:1.55;background:#E0EDCC;color:#2E4A20">Cass LTL Index: $98.4/cwt (-1.2% 30D) | Carrier OR: 93.8% (loosening) | Shipper Leverage: 18-month high</div>
+  <p style="font-size:12px;color:#4A5548;line-height:1.6">LTL rates are softening across all major carriers as capacity loosens. This is the highest shipper leverage in 18 months -- an ideal window to renegotiate SPAM, canned goods, and shelf-stable distribution LTL contracts. Old Dominion, Saia, and XPO are all in competitive mode. Targeting 3-5% rate reduction on Hormel's LTL portfolio is realistic and could save $140-220K annually.</p>
+  <div style="display:flex;gap:5px;flex-wrap:wrap"><span style="font-size:10px;padding:2px 9px;border-radius:12px;font-weight:500;background:#FEF0E5;color:#B85A18">Margin</span> <span style="font-size:10px;padding:2px 9px;border-radius:12px;font-weight:500;background:#EEF0E6;color:#4A5548">SPAM</span> <span style="font-size:10px;padding:2px 9px;border-radius:12px;font-weight:500;background:#E0EDCC;color:#2E4A20">Case Fill</span></div>
+  <div style="border-top:1px solid rgba(40,58,30,.12);padding-top:8px">
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="#7A8575" stroke-width="1.5"><path d="M1 13h12M1 1h12"/></svg><span style="font-size:9px;font-weight:700;color:#7A8575;text-transform:uppercase;letter-spacing:.1em">Data Sources</span></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(40,58,30,.08);font-size:11px"><div style="display:flex;align-items:center;gap:6px;color:#4A5548"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="#7A8575" stroke-width="1.5"><polyline points="1,10 4,6 7,8 10,4 13,5"/></svg>Cass Transportation Index</div><span style="color:#7A8575;font-size:10px;font-family:monospace">Thu, Jun 18, 2026</span></div><div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(40,58,30,.08);font-size:11px"><div style="display:flex;align-items:center;gap:6px;color:#4A5548"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="#7A8575" stroke-width="1.5"><polyline points="1,10 4,6 7,8 10,4 13,5"/></svg>Old Dominion Freight Line</div><span style="color:#7A8575;font-size:10px;font-family:monospace">Thu, Jun 18, 2026</span></div>
+  </div>
+</div></div>
+</div>
+<div id="pane-network" class="tp" style="display:none">
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+  <p class="sec-hdr" style="margin:0">Critical Freight Lanes</p>
+  <button onclick="exportLanesCSV()" class="no-print" style="font-size:11px;padding:5px 12px;background:#3B5E28;color:#fff;border:none;border-radius:4px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px">&#128190; Download CSV</button>
+</div>
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:16px">
+  <div style="background:#FDE8E5;border:1px solid rgba(40,58,30,.15);border-radius:4px;padding:10px 12px"><p style="font-size:9px;font-weight:700;color:#A02010;text-transform:uppercase;letter-spacing:.07em;margin:0 0 3px">Lock Now lanes</p><p style="font-size:22px;font-weight:700;font-family:monospace;color:#A02010;margin:0">5</p><p style="font-size:9px;color:#A02010;margin:1px 0 0">Reefer TL + Cross-Border</p></div>
+  <div style="background:#FEF0E5;border:1px solid rgba(40,58,30,.15);border-radius:4px;padding:10px 12px"><p style="font-size:9px;font-weight:700;color:#B85A18;text-transform:uppercase;letter-spacing:.07em;margin:0 0 3px">Monitor lanes</p><p style="font-size:22px;font-weight:700;font-family:monospace;color:#B85A18;margin:0">2</p><p style="font-size:9px;color:#B85A18;margin:1px 0 0">Dry Van Watch</p></div>
+  <div style="background:#E0EDCC;border:1px solid rgba(40,58,30,.15);border-radius:4px;padding:10px 12px"><p style="font-size:9px;font-weight:700;color:#2E4A20;text-transform:uppercase;letter-spacing:.07em;margin:0 0 3px">Spot Play lanes</p><p style="font-size:22px;font-weight:700;font-family:monospace;color:#2E4A20;margin:0">3</p><p style="font-size:9px;color:#2E4A20;margin:1px 0 0">Ocean FCL + Intermodal</p></div>
+  <div style="background:#FDE8E5;border:1px solid rgba(40,58,30,.15);border-radius:4px;padding:10px 12px"><p style="font-size:9px;font-weight:700;color:#A02010;text-transform:uppercase;letter-spacing:.07em;margin:0 0 3px">OTIF below target</p><p style="font-size:22px;font-weight:700;font-family:monospace;color:#A02010;margin:0">2</p><p style="font-size:9px;color:#A02010;margin:1px 0 0">Walmart + Target</p></div>
+</div>
+<div class="rt-tbl">
+  <div class="rt-hdr-row">
+    <div class="rt-hc">Hormel Lane</div>
+    <div class="rt-hc">Mode</div>
+    <div class="rt-hc">Spot Rate</div>
+    <div class="rt-hc">30D Delta</div>
+    <div class="rt-hc">L:T</div>
+    <div class="rt-hc">OTIF / Target</div>
+    <div class="rt-hc">Risk</div>
+    <div class="rt-hc">Action</div>
+  </div>
+  <div class="lane-row" onclick="toggleLane(1)" data-id="1" data-hist='[3.52, 3.55, 3.58, 3.62, 3.65, 3.67, 3.71, 3.74, 3.77, 3.79, 3.81, 3.82]' data-o="Austin MN" data-d="Walmart DC Sanger TX" data-m="Reefer TL" data-note="Hormel / Applegate" data-s="$3.82/mi" data-c30="9.2">
+  <div class="rt-dc"><p style="font-weight:700;font-size:11px;margin:0 0 1px">Austin MN &rarr; Walmart DC Sanger TX</p><p style="font-size:9px;color:#7A8575;margin:0">Hormel / Applegate</p></div>
+  <div class="rt-dc" style="font-size:11px;color:#4A5548">Reefer TL</div>
+  <div class="rt-dc" style="font-family:monospace;font-size:12px;font-weight:700">$3.82/mi</div>
+  <div class="rt-dc" style="font-family:monospace;font-size:12px;font-weight:700;color:#C83020">&#9650;9.2%</div>
+  <div class="rt-dc"><span style="font-family:monospace;font-size:11px;color:#C83020">8.6</span></div>
+  <div class="rt-dc"><span style="font-size:10px;font-family:monospace;color:#C83020;font-weight:700">94.2%</span><span style="font-size:9px;color:#7A8575">/98.5%</span></div>
+  <div class="rt-dc"><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;background:#FDE8E5;color:#A02010">HIGH</span></div>
+  <div class="rt-dc" style="border-right:none"><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;background:#FDE8E5;color:#A02010">LOCK NOW</span></div>
+</div>
+<div class="lane-row" onclick="toggleLane(2)" data-id="2" data-hist='[3.15, 3.18, 3.21, 3.24, 3.26, 3.28, 3.31, 3.34, 3.37, 3.4, 3.44, 3.47]' data-o="Austin MN" data-d="Los Angeles CA" data-m="Reefer TL" data-note="Hormel Refrigerated" data-s="$3.47/mi" data-c30="7.8">
+  <div class="rt-dc"><p style="font-weight:700;font-size:11px;margin:0 0 1px">Austin MN &rarr; Los Angeles CA</p><p style="font-size:9px;color:#7A8575;margin:0">Hormel Refrigerated</p></div>
+  <div class="rt-dc" style="font-size:11px;color:#4A5548">Reefer TL</div>
+  <div class="rt-dc" style="font-family:monospace;font-size:12px;font-weight:700">$3.47/mi</div>
+  <div class="rt-dc" style="font-family:monospace;font-size:12px;font-weight:700;color:#C83020">&#9650;7.8%</div>
+  <div class="rt-dc"><span style="font-family:monospace;font-size:11px;color:#C83020">8.2</span></div>
+  <div class="rt-dc"><span style="font-size:10px;color:#7A8575">&mdash;</span></div>
+  <div class="rt-dc"><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;background:#FDE8E5;color:#A02010">HIGH</span></div>
+  <div class="rt-dc" style="border-right:none"><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;background:#FDE8E5;color:#A02010">LOCK NOW</span></div>
+</div>
+<div class="lane-row" onclick="toggleLane(3)" data-id="3" data-hist='[3.1, 3.13, 3.16, 3.19, 3.22, 3.24, 3.27, 3.3, 3.33, 3.36, 3.39, 3.41]' data-o="Rochelle IL" data-d="Northeast US" data-m="Reefer TL" data-note="Applegate Organic" data-s="$3.41/mi" data-c30="7.2">
+  <div class="rt-dc"><p style="font-weight:700;font-size:11px;margin:0 0 1px">Rochelle IL &rarr; Northeast US</p><p style="font-size:9px;color:#7A8575;margin:0">Applegate Organic</p></div>
+  <div class="rt-dc" style="font-size:11px;color:#4A5548">Reefer TL</div>
+  <div class="rt-dc" style="font-family:monospace;font-size:12px;font-weight:700">$3.41/mi</div>
+  <div class="rt-dc" style="font-family:monospace;font-size:12px;font-weight:700;color:#C83020">&#9650;7.2%</div>
+  <div class="rt-dc"><span style="font-family:monospace;font-size:11px;color:#C83020">8.0</span></div>
+  <div class="rt-dc"><span style="font-size:10px;color:#7A8575">&mdash;</span></div>
+  <div class="rt-dc"><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;background:#FDE8E5;color:#A02010">HIGH</span></div>
+  <div class="rt-dc" style="border-right:none"><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;background:#FDE8E5;color:#A02010">LOCK NOW</span></div>
+</div>
+<div class="lane-row" onclick="toggleLane(4)" data-id="4" data-hist='[2.62, 2.64, 2.67, 2.69, 2.71, 2.7, 2.72, 2.74, 2.76, 2.77, 2.77, 2.78]' data-o="Austin MN" data-d="Walmart DC Winchester VA" data-m="Dry Van TL" data-note="SPAM / Shelf-Stable" data-s="$2.78/mi" data-c30="5.4">
+  <div class="rt-dc"><p style="font-weight:700;font-size:11px;margin:0 0 1px">Austin MN &rarr; Walmart DC Winchester VA</p><p style="font-size:9px;color:#7A8575;margin:0">SPAM / Shelf-Stable</p></div>
+  <div class="rt-dc" style="font-size:11px;color:#4A5548">Dry Van TL</div>
+  <div class="rt-dc" style="font-family:monospace;font-size:12px;font-weight:700">$2.78/mi</div>
+  <div class="rt-dc" style="font-family:monospace;font-size:12px;font-weight:700;color:#C83020">&#9650;5.4%</div>
+  <div class="rt-dc"><span style="font-family:monospace;font-size:11px;color:#E07828">5.8</span></div>
+  <div class="rt-dc"><span style="font-size:10px;font-family:monospace;color:#E07828;font-weight:700">96.4%</span><span style="font-size:9px;color:#7A8575">/98.5%</span></div>
+  <div class="rt-dc"><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;background:#FEF0E5;color:#B85A18">WATCH</span></div>
+  <div class="rt-dc" style="border-right:none"><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;background:#EEF0E6;color:#5A6355">MONITOR</span></div>
+</div>
+<div class="lane-row" onclick="toggleLane(5)" data-id="5" data-hist='[2.74, 2.73, 2.72, 2.71, 2.7, 2.7, 2.69, 2.68, 2.67, 2.65, 2.63, 2.61]' data-o="Fremont NE" data-d="Southeast US" data-m="Dry Van TL" data-note="Justin's / Nut Butter" data-s="$2.61/mi" data-c30="-2.3">
+  <div class="rt-dc"><p style="font-weight:700;font-size:11px;margin:0 0 1px">Fremont NE &rarr; Southeast US</p><p style="font-size:9px;color:#7A8575;margin:0">Justin's / Nut Butter</p></div>
+  <div class="rt-dc" style="font-size:11px;color:#4A5548">Dry Van TL</div>
+  <div class="rt-dc" style="font-family:monospace;font-size:12px;font-weight:700">$2.61/mi</div>
+  <div class="rt-dc" style="font-family:monospace;font-size:12px;font-weight:700;color:#3B5E28">&#9660;2.3%</div>
+  <div class="rt-dc"><span style="font-family:monospace;font-size:11px;color:#7A8575">4.8</span></div>
+  <div class="rt-dc"><span style="font-size:10px;color:#7A8575">&mdash;</span></div>
+  <div class="rt-dc"><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;background:#E0EDCC;color:#2E4A20">EASING</span></div>
+  <div class="rt-dc" style="border-right:none"><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;background:#E0EDCC;color:#2E4A20">SPOT PLAY</span></div>
+</div>
+<div class="lane-row" onclick="toggleLane(6)" data-id="6" data-hist='[3780, 3650, 3560, 3490, 3420, 3375, 3340, 3310, 3285, 3265, 3248, 3240]' data-o="Shanghai CN" data-d="LA/LB Port CA" data-m="Ocean FCL" data-note="SPAM Packaging + Soy" data-s="$3,240/FEU" data-c30="-8.3">
+  <div class="rt-dc"><p style="font-weight:700;font-size:11px;margin:0 0 1px">Shanghai CN &rarr; LA/LB Port CA</p><p style="font-size:9px;color:#7A8575;margin:0">SPAM Packaging + Soy</p></div>
+  <div class="rt-dc" style="font-size:11px;color:#4A5548">Ocean FCL</div>
+  <div class="rt-dc" style="font-family:monospace;font-size:12px;font-weight:700">$3,240/FEU</div>
+  <div class="rt-dc" style="font-family:monospace;font-size:12px;font-weight:700;color:#3B5E28">&#9660;8.3%</div>
+  <div class="rt-dc"><span style="color:#7A8575">&mdash;</span></div>
+  <div class="rt-dc"><span style="font-size:10px;color:#7A8575">&mdash;</span></div>
+  <div class="rt-dc"><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;background:#FEF0E5;color:#B85A18">WATCH</span></div>
+  <div class="rt-dc" style="border-right:none"><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;background:#E0EDCC;color:#2E4A20">BUY NOW</span></div>
+</div>
+<div class="lane-row" onclick="toggleLane(7)" data-id="7" data-hist='[3480, 3500, 3520, 3540, 3560, 3580, 3600, 3640, 3680, 3720, 3760, 3800]' data-o="Monterrey MX" data-d="Austin MN" data-m="Cross-Border TL" data-note="Protein Ingredients" data-s="$3,800/load" data-c30="9.1">
+  <div class="rt-dc"><p style="font-weight:700;font-size:11px;margin:0 0 1px">Monterrey MX &rarr; Austin MN</p><p style="font-size:9px;color:#7A8575;margin:0">Protein Ingredients</p></div>
+  <div class="rt-dc" style="font-size:11px;color:#4A5548">Cross-Border TL</div>
+  <div class="rt-dc" style="font-family:monospace;font-size:12px;font-weight:700">$3,800/load</div>
+  <div class="rt-dc" style="font-family:monospace;font-size:12px;font-weight:700;color:#C83020">&#9650;9.1%</div>
+  <div class="rt-dc"><span style="font-family:monospace;font-size:11px;color:#E07828">7.4</span></div>
+  <div class="rt-dc"><span style="font-size:10px;color:#7A8575">&mdash;</span></div>
+  <div class="rt-dc"><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;background:#FDE8E5;color:#A02010">HIGH</span></div>
+  <div class="rt-dc" style="border-right:none"><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;background:#FDE8E5;color:#A02010">LOCK NOW</span></div>
+</div>
+<div class="lane-row" onclick="toggleLane(8)" data-id="8" data-hist='[2280, 2270, 2260, 2250, 2240, 2230, 2220, 2215, 2210, 2200, 2190, 2180]' data-o="LA/LB Port CA" data-d="Austin MN" data-m="Intermodal" data-note="Ingredient Import Drayage" data-s="$2,180/FEU" data-c30="-2.1">
+  <div class="rt-dc"><p style="font-weight:700;font-size:11px;margin:0 0 1px">LA/LB Port CA &rarr; Austin MN</p><p style="font-size:9px;color:#7A8575;margin:0">Ingredient Import Drayage</p></div>
+  <div class="rt-dc" style="font-size:11px;color:#4A5548">Intermodal</div>
+  <div class="rt-dc" style="font-family:monospace;font-size:12px;font-weight:700">$2,180/FEU</div>
+  <div class="rt-dc" style="font-family:monospace;font-size:12px;font-weight:700;color:#3B5E28">&#9660;2.1%</div>
+  <div class="rt-dc"><span style="color:#7A8575">&mdash;</span></div>
+  <div class="rt-dc"><span style="font-size:10px;color:#7A8575">&mdash;</span></div>
+  <div class="rt-dc"><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;background:#E0EDCC;color:#2E4A20">EASING</span></div>
+  <div class="rt-dc" style="border-right:none"><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;background:#E0EDCC;color:#2E4A20">SPOT PLAY</span></div>
+</div>
+<div class="lane-row" onclick="toggleLane(9)" data-id="9" data-hist='[3.22, 3.26, 3.3, 3.34, 3.37, 3.39, 3.42, 3.45, 3.48, 3.51, 3.53, 3.55]' data-o="Austin MN" data-d="Target DC Lacey WA" data-m="Reefer TL" data-note="Hormel Refrigerated" data-s="$3.55/mi" data-c30="8.8">
+  <div class="rt-dc"><p style="font-weight:700;font-size:11px;margin:0 0 1px">Austin MN &rarr; Target DC Lacey WA</p><p style="font-size:9px;color:#7A8575;margin:0">Hormel Refrigerated</p></div>
+  <div class="rt-dc" style="font-size:11px;color:#4A5548">Reefer TL</div>
+  <div class="rt-dc" style="font-family:monospace;font-size:12px;font-weight:700">$3.55/mi</div>
+  <div class="rt-dc" style="font-family:monospace;font-size:12px;font-weight:700;color:#C83020">&#9650;8.8%</div>
+  <div class="rt-dc"><span style="font-family:monospace;font-size:11px;color:#C83020">8.4</span></div>
+  <div class="rt-dc"><span style="font-size:10px;font-family:monospace;color:#E07828;font-weight:700">96.1%</span><span style="font-size:9px;color:#7A8575">/98.0%</span></div>
+  <div class="rt-dc"><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;background:#FDE8E5;color:#A02010">HIGH</span></div>
+  <div class="rt-dc" style="border-right:none"><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;background:#FDE8E5;color:#A02010">LOCK NOW</span></div>
+</div>
+<div class="lane-row" onclick="toggleLane(10)" data-id="10" data-hist='[2.82, 2.83, 2.84, 2.85, 2.86, 2.85, 2.87, 2.88, 2.9, 2.91, 2.93, 2.95]' data-o="Stockton CA" data-d="Pacific Northwest" data-m="Dry Van TL" data-note="Columbus Craft Meats" data-s="$2.95/mi" data-c30="4.8">
+  <div class="rt-dc"><p style="font-weight:700;font-size:11px;margin:0 0 1px">Stockton CA &rarr; Pacific Northwest</p><p style="font-size:9px;color:#7A8575;margin:0">Columbus Craft Meats</p></div>
+  <div class="rt-dc" style="font-size:11px;color:#4A5548">Dry Van TL</div>
+  <div class="rt-dc" style="font-family:monospace;font-size:12px;font-weight:700">$2.95/mi</div>
+  <div class="rt-dc" style="font-family:monospace;font-size:12px;font-weight:700;color:#C83020">&#9650;4.8%</div>
+  <div class="rt-dc"><span style="font-family:monospace;font-size:11px;color:#E07828">5.9</span></div>
+  <div class="rt-dc"><span style="font-size:10px;color:#7A8575">&mdash;</span></div>
+  <div class="rt-dc"><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;background:#FEF0E5;color:#B85A18">WATCH</span></div>
+  <div class="rt-dc" style="border-right:none"><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;background:#EEF0E6;color:#5A6355">MONITOR</span></div>
+</div>
+</div>
+<div class="lane-det" id="lane-det"></div>
+<p style="font-size:10px;color:#7A8575;margin-top:4px">Click any lane row to expand 12-week spot rate trend chart.</p>
+</div>
+<div id="pane-actions" class="tp" style="display:none">
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+  <p class="sec-hdr" style="margin:0">Priority Actions</p>
+  <span id="action-counter" style="font-size:11px;color:#3B5E28;font-weight:600"></span>
+</div>
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:16px">
+  <div style="background:#FDE8E5;border-radius:4px;padding:10px 12px;border-top:3px solid #C83020"><p style="font-size:22px;font-weight:700;font-family:monospace;color:#A02010;margin:0 0 2px">2</p><p style="font-size:11px;color:#A02010;margin:0">CRITICAL — act today</p></div>
+  <div style="background:#FDE8E5;border-radius:4px;padding:10px 12px;border-top:3px solid #C83020"><p style="font-size:22px;font-weight:700;font-family:monospace;color:#A02010;margin:0 0 2px">2</p><p style="font-size:11px;color:#A02010;margin:0">HIGH — this week</p></div>
+  <div style="background:#E6F1FB;border-radius:4px;padding:10px 12px;border-top:3px solid #378ADD"><p style="font-size:22px;font-weight:700;font-family:monospace;color:#0C447C;margin:0 0 2px">2</p><p style="font-size:11px;color:#0C447C;margin:0">MEDIUM — 30 days</p></div>
+  <div style="background:#EEF0E6;border-radius:4px;padding:10px 12px;border-top:3px solid #7A8575"><p style="font-size:22px;font-weight:700;font-family:monospace;color:#5A6355;margin:0 0 2px">1</p><p style="font-size:11px;color:#5A6355;margin:0">LOW — 60 days</p></div>
+</div>
+<div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-left:3px solid #C83020;border-radius:4px;padding:13px 16px;margin-bottom:10px">
+  <div style="display:flex;align-items:flex-start;gap:14px">
+    <div style="flex:1;min-width:0">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:7px;flex-wrap:wrap">
+        <span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;background:#FDE8E5;color:#A02010">CRITICAL</span>
+        <span style="font-size:9px;color:#7A8575;background:#EEF0E6;padding:2px 7px;border-radius:3px">Reefer TL</span>
+        <span style="font-size:10px;color:#7A8575;margin-left:auto;flex-shrink:0">Act today</span>
+      </div>
+      <p style="font-size:13px;font-weight:700;color:#1A2816;margin:0 0 7px;line-height:1.3">Lock reefer capacity for Applegate + Hormel refrigerated outbound -- Aug through Oct</p>
+      <p style="font-size:11px;color:#4A5548;margin:0 0 5px;line-height:1.6"><strong style="color:#1A2816">Why now: </strong>Spot at $3.82/mi and rising. Produce season + hurricane season = reefer crunch. Every week of delay adds $40-80K in avoidable premium. Walmart OTIF at 94.2% -- a reefer shortage triggers penalties on top of cost.</p>
+      <p style="font-size:11px;color:#4A5548;margin:0;line-height:1.6"><strong style="color:#1A2816">How: </strong>Contact top 5 reefer carriers for Austin MN and Rochelle IL outbound. Lock Q3-Q4 at current contract level. Avoid DAT spot market for all refrigerated outbound after August 1.</p>
+    </div>
+    <div style="text-align:right;flex-shrink:0;min-width:100px;border-left:1px solid rgba(40,58,30,.1);padding-left:14px">
+      <p style="font-size:9px;color:#7A8575;margin:0 0 4px;text-transform:uppercase;letter-spacing:.07em">Potential saving</p>
+      <p style="font-size:14px;font-weight:700;font-family:monospace;color:#3B5E28;margin:0">$180-240K</p>
+    </div>
+  </div>
+</div>
+<div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-left:3px solid #C83020;border-radius:4px;padding:13px 16px;margin-bottom:10px">
+  <div style="display:flex;align-items:flex-start;gap:14px">
+    <div style="flex:1;min-width:0">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:7px;flex-wrap:wrap">
+        <span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;background:#FDE8E5;color:#A02010">CRITICAL</span>
+        <span style="font-size:9px;color:#7A8575;background:#EEF0E6;padding:2px 7px;border-radius:3px">Ocean FCL</span>
+        <span style="font-size:10px;color:#7A8575;margin-left:auto;flex-shrink:0">This week</span>
+      </div>
+      <p style="font-size:13px;font-weight:700;color:#1A2816;margin:0 0 7px;line-height:1.3">Reroute SPAM + ingredient FCL from Panama to Suez -- activate immediately</p>
+      <p style="font-size:11px;color:#4A5548;margin:0 0 5px;line-height:1.6"><strong style="color:#1A2816">Why now: </strong>Panama surcharges of $400-600/FEU are active. Lead times +8-12 days. Q4 holiday production build (SPAM, ham, canned) requires Sep-Nov ingredient arrivals -- those windows are closing now.</p>
+      <p style="font-size:11px;color:#4A5548;margin:0;line-height:1.6"><strong style="color:#1A2816">How: </strong>Issue blanket instruction to all Asia-origin ocean carriers to route via Suez. Notify procurement of +10-day adjusted arrival dates. Update manufacturing schedule for holiday production.</p>
+    </div>
+    <div style="text-align:right;flex-shrink:0;min-width:100px;border-left:1px solid rgba(40,58,30,.1);padding-left:14px">
+      <p style="font-size:9px;color:#7A8575;margin:0 0 4px;text-transform:uppercase;letter-spacing:.07em">Potential saving</p>
+      <p style="font-size:14px;font-weight:700;font-family:monospace;color:#3B5E28;margin:0">Prevents Q4 production gap</p>
+    </div>
+  </div>
+</div>
+<div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-left:3px solid #C83020;border-radius:4px;padding:13px 16px;margin-bottom:10px">
+  <div style="display:flex;align-items:flex-start;gap:14px">
+    <div style="flex:1;min-width:0">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:7px;flex-wrap:wrap">
+        <span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;background:#FDE8E5;color:#A02010">HIGH</span>
+        <span style="font-size:9px;color:#7A8575;background:#EEF0E6;padding:2px 7px;border-radius:3px">Ocean FCL</span>
+        <span style="font-size:10px;color:#7A8575;margin-left:auto;flex-shrink:0">By July 20</span>
+      </div>
+      <p style="font-size:13px;font-weight:700;color:#1A2816;margin:0 0 7px;line-height:1.3">Pre-book Q4 holiday production ingredient FCL at current soft rates</p>
+      <p style="font-size:11px;color:#4A5548;margin:0 0 5px;line-height:1.6"><strong style="color:#1A2816">Why now: </strong>Ocean FCL at $3,240/FEU -- 8.3% below 30 days ago. Asia peak season loading starts August 1. October spot forecast: $3,800-4,200/FEU. This is the annual buying window every CLO waits for.</p>
+      <p style="font-size:11px;color:#4A5548;margin:0;line-height:1.6"><strong style="color:#1A2816">How: </strong>Issue RFQ to 3 ocean carriers (Maersk, MSC, Evergreen) for Sep-Dec sailings. Target $3,200-3,400/FEU. Include Suez routing option. Align with procurement on SPAM and canned goods ingredient volumes.</p>
+    </div>
+    <div style="text-align:right;flex-shrink:0;min-width:100px;border-left:1px solid rgba(40,58,30,.1);padding-left:14px">
+      <p style="font-size:9px;color:#7A8575;margin:0 0 4px;text-transform:uppercase;letter-spacing:.07em">Potential saving</p>
+      <p style="font-size:14px;font-weight:700;font-family:monospace;color:#3B5E28;margin:0">$0.8-1.4M</p>
+    </div>
+  </div>
+</div>
+<div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-left:3px solid #C83020;border-radius:4px;padding:13px 16px;margin-bottom:10px">
+  <div style="display:flex;align-items:flex-start;gap:14px">
+    <div style="flex:1;min-width:0">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:7px;flex-wrap:wrap">
+        <span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;background:#FDE8E5;color:#A02010">HIGH</span>
+        <span style="font-size:9px;color:#7A8575;background:#EEF0E6;padding:2px 7px;border-radius:3px">Cross-Border TL</span>
+        <span style="font-size:10px;color:#7A8575;margin-left:auto;flex-shrink:0">By July 20</span>
+      </div>
+      <p style="font-size:13px;font-weight:700;color:#1A2816;margin:0 0 7px;line-height:1.3">Convert Monterrey MX protein ingredient sourcing to 6-month contract</p>
+      <p style="font-size:11px;color:#4A5548;margin:0 0 5px;line-height:1.6"><strong style="color:#1A2816">Why now: </strong>Spot at $3,800/load (+9.1% in 30 days). Nearshoring demand is structural -- this is not reversing. Forecast: $4,200+ per load in 30 days. Waiting costs $280-420K annually in avoidable spot premium.</p>
+      <p style="font-size:11px;color:#4A5548;margin:0;line-height:1.6"><strong style="color:#1A2816">How: </strong>Negotiate 6-month contract at $3,800-3,900/load with Monterrey carrier partners. Include fuel surcharge cap and volume flexibility clause. Maintain 1 spot carrier for emergency pulls.</p>
+    </div>
+    <div style="text-align:right;flex-shrink:0;min-width:100px;border-left:1px solid rgba(40,58,30,.1);padding-left:14px">
+      <p style="font-size:9px;color:#7A8575;margin:0 0 4px;text-transform:uppercase;letter-spacing:.07em">Potential saving</p>
+      <p style="font-size:14px;font-weight:700;font-family:monospace;color:#3B5E28;margin:0">$280-420K/yr</p>
+    </div>
+  </div>
+</div>
+<div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-left:3px solid #378ADD;border-radius:4px;padding:13px 16px;margin-bottom:10px">
+  <div style="display:flex;align-items:flex-start;gap:14px">
+    <div style="flex:1;min-width:0">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:7px;flex-wrap:wrap">
+        <span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;background:#E6F1FB;color:#0C447C">MEDIUM</span>
+        <span style="font-size:9px;color:#7A8575;background:#EEF0E6;padding:2px 7px;border-radius:3px">LTL</span>
+        <span style="font-size:10px;color:#7A8575;margin-left:auto;flex-shrink:0">Within 30 days</span>
+      </div>
+      <p style="font-size:13px;font-weight:700;color:#1A2816;margin:0 0 7px;line-height:1.3">Renegotiate LTL rates for shelf-stable distribution -- 18-month leverage peak</p>
+      <p style="font-size:11px;color:#4A5548;margin:0 0 5px;line-height:1.6"><strong style="color:#1A2816">Why now: </strong>LTL rates down 1.2% in 30 days. Carrier operating ratios loosening. Shipper leverage at 18-month high. SPAM and canned goods LTL volumes are significant negotiating currency for Hormel.</p>
+      <p style="font-size:11px;color:#4A5548;margin:0;line-height:1.6"><strong style="color:#1A2816">How: </strong>Issue RFP to Old Dominion, Saia, XPO for SPAM and shelf-stable distribution. Request 3-5% rate reduction. Use competitive bids as leverage. Lock new rates through Q2 2027.</p>
+    </div>
+    <div style="text-align:right;flex-shrink:0;min-width:100px;border-left:1px solid rgba(40,58,30,.1);padding-left:14px">
+      <p style="font-size:9px;color:#7A8575;margin:0 0 4px;text-transform:uppercase;letter-spacing:.07em">Potential saving</p>
+      <p style="font-size:14px;font-weight:700;font-family:monospace;color:#3B5E28;margin:0">$140-220K/yr</p>
+    </div>
+  </div>
+</div>
+<div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-left:3px solid #378ADD;border-radius:4px;padding:13px 16px;margin-bottom:10px">
+  <div style="display:flex;align-items:flex-start;gap:14px">
+    <div style="flex:1;min-width:0">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:7px;flex-wrap:wrap">
+        <span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;background:#E6F1FB;color:#0C447C">MEDIUM</span>
+        <span style="font-size:9px;color:#7A8575;background:#EEF0E6;padding:2px 7px;border-radius:3px">Intermodal</span>
+        <span style="font-size:10px;color:#7A8575;margin-left:auto;flex-shrink:0">Within 30 days</span>
+      </div>
+      <p style="font-size:13px;font-weight:700;color:#1A2816;margin:0 0 7px;line-height:1.3">Modal shift -- Austin MN to Southeast shelf-stable from Dry Van to Intermodal</p>
+      <p style="font-size:11px;color:#4A5548;margin:0 0 5px;line-height:1.6"><strong style="color:#1A2816">Why now: </strong>Dry Van spot +5.4%. Intermodal only +3.1%. SPAM and canned goods moving 500+ miles to Southeast DCs are not time-critical. Current rate spread: $0.66/mi savings on intermodal-eligible lanes.</p>
+      <p style="font-size:11px;color:#4A5548;margin:0;line-height:1.6"><strong style="color:#1A2816">How: </strong>Pilot Austin MN to Atlanta on BNSF EMP network. Evaluate 2-day transit premium vs 23% rate savings. Target 20% modal shift for non-time-critical shelf-stable SKUs on lanes over 500 miles.</p>
+    </div>
+    <div style="text-align:right;flex-shrink:0;min-width:100px;border-left:1px solid rgba(40,58,30,.1);padding-left:14px">
+      <p style="font-size:9px;color:#7A8575;margin:0 0 4px;text-transform:uppercase;letter-spacing:.07em">Potential saving</p>
+      <p style="font-size:14px;font-weight:700;font-family:monospace;color:#3B5E28;margin:0">$90-160K/yr</p>
+    </div>
+  </div>
+</div>
+<div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-left:3px solid #888780;border-radius:4px;padding:13px 16px;margin-bottom:10px">
+  <div style="display:flex;align-items:flex-start;gap:14px">
+    <div style="flex:1;min-width:0">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:7px;flex-wrap:wrap">
+        <span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;background:#EEF0E6;color:#5A6355">LOW</span>
+        <span style="font-size:9px;color:#7A8575;background:#EEF0E6;padding:2px 7px;border-radius:3px">Parcel</span>
+        <span style="font-size:10px;color:#7A8575;margin-left:auto;flex-shrink:0">60 days</span>
+      </div>
+      <p style="font-size:13px;font-weight:700;color:#1A2816;margin:0 0 7px;line-height:1.3">Audit Hormel.com parcel carrier mix -- DTC and corporate gifting program</p>
+      <p style="font-size:11px;color:#4A5548;margin:0 0 5px;line-height:1.6"><strong style="color:#1A2816">Why now: </strong>Parcel base rates down 0.6%. But delivery area surcharges and residential fees up 8% YoY for Hormel.com DTC and gifting program. Base rate softness is being fully offset by accessorial inflation.</p>
+      <p style="font-size:11px;color:#4A5548;margin:0;line-height:1.6"><strong style="color:#1A2816">How: </strong>Annual RFP benchmarked against ShipMatrix food/CPG DTC data. Focus on delivery area surcharge caps and residential delivery rates for Q4 gifting box program.</p>
+    </div>
+    <div style="text-align:right;flex-shrink:0;min-width:100px;border-left:1px solid rgba(40,58,30,.1);padding-left:14px">
+      <p style="font-size:9px;color:#7A8575;margin:0 0 4px;text-transform:uppercase;letter-spacing:.07em">Potential saving</p>
+      <p style="font-size:14px;font-weight:700;font-family:monospace;color:#3B5E28;margin:0">$60-100K/yr</p>
+    </div>
+  </div>
+</div>
+<p class="sec-hdr" style="margin-top:20px">Escalation Triggers</p>
+<div class="esc-tbl">
+  <div class="esc-hdr">
+    <div class="esc-hc">Trigger Condition</div>
+    <div class="esc-hc">Threshold</div>
+    <div class="esc-hc">Required Response</div>
+    <div class="esc-hc">KPI</div>
+    <div class="esc-hc">Owner</div>
+  </div>
+  <div class="esc-row"><div class="esc-dc">Reefer TL spot rate exceeds $4.00/mi from Austin MN outbound</div><div><span style="font-size:11px;font-weight:700;font-family:monospace;color:#E07828">$3.82/mi</span></div><div style="font-size:11px;color:#4A5548;line-height:1.5">Lock reefer contracts immediately for Q3-Q4. Approve $0.40/mi emergency premium. Escalate to SVP Supply Chain.</div><div><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.06em;background:#E0EDCC;color:#2E4A20">Case Fill</span></div><div style="font-size:11px;font-weight:700;color:#4A5548">Transportation</div></div>
+<div class="esc-row"><div class="esc-dc">Walmart OTIF score drops below 95.0% (refrigerated lanes)</div><div><span style="font-size:11px;font-weight:700;font-family:monospace;color:#C83020">94.2% (triggered)</span></div><div style="font-size:11px;color:#4A5548;line-height:1.5">Assign dedicated reefer carrier for Walmart lanes. Build 5-day safety stock at Sanger TX and Winchester VA.</div><div><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.06em;background:#E0EDCC;color:#2E4A20">Case Fill</span></div><div style="font-size:11px;font-weight:700;color:#4A5548">Customer Service</div></div>
+<div class="esc-row"><div class="esc-dc">Panama Canal FCL surcharge exceeds $600/FEU</div><div><span style="font-size:11px;font-weight:700;font-family:monospace;color:#E07828">$540/FEU (active)</span></div><div style="font-size:11px;color:#4A5548;line-height:1.5">Full Suez Canal rerouting for all SPAM ingredient FCL. Adjust manufacturing lead times accordingly.</div><div><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.06em;background:#FEF0E5;color:#B85A18">Margin</span></div><div style="font-size:11px;font-weight:700;color:#4A5548">Procurement</div></div>
+<div class="esc-row"><div class="esc-dc">Hurricane Category 3+ within 200 miles of Austin MN</div><div><span style="font-size:11px;font-weight:700;font-family:monospace;color:#E07828">Cat 1 approaching</span></div><div style="font-size:11px;color:#4A5548;line-height:1.5">Pre-position 7-day refrigerated inventory at downstream Southeast DCs. Lock emergency reefer capacity.</div><div><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.06em;background:#E0EDCC;color:#2E4A20">Case Fill</span></div><div style="font-size:11px;font-weight:700;color:#4A5548">Planning</div></div>
+<div class="esc-row"><div class="esc-dc">Reefer tender rejection rate exceeds 25% on Hormel network</div><div><span style="font-size:11px;font-weight:700;font-family:monospace;color:#3B5E28">18.4% (building)</span></div><div style="font-size:11px;color:#4A5548;line-height:1.5">Activate backup carrier pool. Approve spot market premium up to $0.50/mi above contract for critical lanes.</div><div><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.06em;background:#E0EDCC;color:#2E4A20">Case Fill</span></div><div style="font-size:11px;font-weight:700;color:#4A5548">Transportation</div></div>
+<div class="esc-row"><div class="esc-dc">Monterrey MX cross-border spot exceeds $4,200/load</div><div><span style="font-size:11px;font-weight:700;font-family:monospace;color:#3B5E28">$3,800/load</span></div><div style="font-size:11px;color:#4A5548;line-height:1.5">Lock 6-month contract at current rate with Monterrey carrier partners. Evaluate alternative sourcing.</div><div><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.06em;background:#FEF0E5;color:#B85A18">Margin</span></div><div style="font-size:11px;font-weight:700;color:#4A5548">Procurement</div></div>
+</div>
+</div>
+<div id="pane-forecast" class="tp" style="display:none">
+
+<div style="margin-bottom:12px;display:flex;flex-wrap:wrap;gap:4px"><button class="fc-mode-btn fma" data-mid="reefer" onclick="setFcMode('reefer')">Reefer TL  </button><button class="fc-mode-btn" data-mid="dryvan" onclick="setFcMode('dryvan')">Dry Van TL  </button><button class="fc-mode-btn" data-mid="ltl" onclick="setFcMode('ltl')">LTL  </button><button class="fc-mode-btn" data-mid="imdl" onclick="setFcMode('imdl')">Intermodal  </button><button class="fc-mode-btn" data-mid="ocean" onclick="setFcMode('ocean')">Ocean FCL  </button><button class="fc-mode-btn" data-mid="air" onclick="setFcMode('air')">Air Freight  </button><button class="fc-mode-btn" data-mid="rail" onclick="setFcMode('rail')">Rail Carload  </button><button class="fc-mode-btn" data-mid="parcel" onclick="setFcMode('parcel')">Parcel / DTC  </button></div>
+<div class="intel-card" style="margin-bottom:14px">
+  <div class="intel-lbl">Rate Outlook</div>
+  <div class="intel-text">Select a mode above. The chart shows 12-week historical trend plus 30-day base case, bull scenario (rates fall -- favorable for shipper), and bear scenario (rates rise -- unfavorable). Use base case for budget planning, bear case for contract negotiation targets. Locking contracts in bear scenario markets protects against further cost increases.</div>
+</div>
+<div id="fc-chart-area" style="background:#fff;border:1px solid rgba(40,58,30,.15);border-radius:4px;padding:14px 16px;min-height:280px"></div>
+</div>
+<div id="pane-sources" class="tp" style="display:none">
+
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:16px">
+  <div style="background:#E0EDCC;border-radius:4px;padding:12px 14px"><p style="font-size:9px;font-weight:700;color:#2E4A20;text-transform:uppercase;letter-spacing:.07em;margin:0 0 3px">Live data sources</p><p style="font-size:22px;font-weight:700;font-family:monospace;color:#2E4A20;margin:0">10</p><p style="font-size:9px;color:#2E4A20;margin:1px 0 0">Queried for live Hormel rate data</p></div>
+  <div style="background:#EEF0E6;border-radius:4px;padding:12px 14px"><p style="font-size:9px;font-weight:700;color:#5A6355;text-transform:uppercase;letter-spacing:.07em;margin:0 0 3px">Reference sources</p><p style="font-size:22px;font-weight:700;font-family:monospace;color:#5A6355;margin:0">6</p><p style="font-size:9px;color:#5A6355;margin:1px 0 0">Linked throughout dashboard</p></div>
+  <div style="background:#EEF0E6;border-radius:4px;padding:12px 14px"><p style="font-size:9px;font-weight:700;color:#5A6355;text-transform:uppercase;letter-spacing:.07em;margin:0 0 3px">Modes tracked</p><p style="font-size:22px;font-weight:700;font-family:monospace;color:#5A6355;margin:0">8</p><p style="font-size:9px;color:#5A6355;margin:1px 0 0">Reefer, Dry Van, Ocean, Air, Rail, LTL, Imdl, Parcel</p></div>
+</div>
+<p style="font-size:11px;font-weight:700;color:#1A2816;text-transform:uppercase;letter-spacing:.1em;padding-bottom:5px;border-bottom:2px solid #3B5E28;display:inline-block;margin:14px 0 10px">Truckload (OTR)</p>
+<div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-radius:4px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px"><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><a href="https://www.dat.com/industry-trends/trendlines" target="_blank" style="font-size:13px;font-weight:700;color:#1A5CA5;text-decoration:underline">DAT Freight & Analytics</a><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.07em;background:#E0EDCC;color:#2E4A20">LIVE</span></div><p style="font-size:11px;color:#4A5548;margin:0 0 6px;line-height:1.5">Industry benchmark for TL spot and contract rates -- dry van, reefer, flatbed by lane. Primary source for L:T ratio and Hormel mode-level rate tracking. Free weekly summaries available.</p><div style="display:flex;gap:4px;flex-wrap:wrap"><span style="font-size:9px;padding:2px 6px;background:#EEF0E6;color:#5A6355;border-radius:3px">Reefer TL</span> <span style="font-size:9px;padding:2px 6px;background:#EEF0E6;color:#5A6355;border-radius:3px">Dry Van TL</span> <span style="font-size:9px;padding:2px 6px;background:#EEF0E6;color:#5A6355;border-radius:3px">L:T Ratio</span></div></div><a href="https://www.dat.com/industry-trends/trendlines" target="_blank" style="font-size:10px;padding:4px 10px;border-radius:3px;background:#EEF0E6;color:#4A5548;flex-shrink:0;white-space:nowrap;border:1px solid rgba(40,58,30,.15)">Open &#8599;</a></div>
+<div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-radius:4px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px"><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><a href="https://www.freightwaves.com/news/category/rates" target="_blank" style="font-size:13px;font-weight:700;color:#1A5CA5;text-decoration:underline">FreightWaves SONAR</a><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.07em;background:#E0EDCC;color:#2E4A20">LIVE</span></div><p style="font-size:11px;color:#4A5548;margin:0 0 6px;line-height:1.5">Real-time freight intelligence: tender rates, tender rejection rates, outbound tender volume. Critical for tracking Austin MN and Rochelle IL outbound rejection rates and spot market signals.</p><div style="display:flex;gap:4px;flex-wrap:wrap"><span style="font-size:9px;padding:2px 6px;background:#EEF0E6;color:#5A6355;border-radius:3px">Tender Rejection</span> <span style="font-size:9px;padding:2px 6px;background:#EEF0E6;color:#5A6355;border-radius:3px">Outbound Volume</span></div></div><a href="https://www.freightwaves.com/news/category/rates" target="_blank" style="font-size:10px;padding:4px 10px;border-radius:3px;background:#EEF0E6;color:#4A5548;flex-shrink:0;white-space:nowrap;border:1px solid rgba(40,58,30,.15)">Open &#8599;</a></div>
+<div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-radius:4px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px"><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><a href="https://www.actresearch.net" target="_blank" style="font-size:13px;font-weight:700;color:#1A5CA5;text-decoration:underline">ACT Research</a><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.07em;background:#EEF0E6;color:#5A6355">REF</span></div><p style="font-size:11px;color:#4A5548;margin:0 0 6px;line-height:1.5">Monthly dry van and reefer spot and contract rates. Carrier operating ratio tracking -- a sustainability signal on Hormel contracted reefer carriers. Published quarterly.</p><div style="display:flex;gap:4px;flex-wrap:wrap"><span style="font-size:9px;padding:2px 6px;background:#EEF0E6;color:#5A6355;border-radius:3px">Carrier OR</span></div></div><a href="https://www.actresearch.net" target="_blank" style="font-size:10px;padding:4px 10px;border-radius:3px;background:#EEF0E6;color:#4A5548;flex-shrink:0;white-space:nowrap;border:1px solid rgba(40,58,30,.15)">Open &#8599;</a></div>
+<p style="font-size:11px;font-weight:700;color:#1A2816;text-transform:uppercase;letter-spacing:.1em;padding-bottom:5px;border-bottom:2px solid #3B5E28;display:inline-block;margin:14px 0 10px">Ocean Freight</p>
+<div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-radius:4px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px"><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><a href="https://www.drewry.co.uk/supply-chain-advisors/supply-chain-expertise/world-container-index-assessed-by-drewry" target="_blank" style="font-size:13px;font-weight:700;color:#1A5CA5;text-decoration:underline">Drewry World Container Index</a><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.07em;background:#E0EDCC;color:#2E4A20">LIVE</span></div><p style="font-size:11px;color:#4A5548;margin:0 0 6px;line-height:1.5">Weekly spot rates including Shanghai-LA and Rotterdam-NY. Primary source for Hormel FCL budget planning and SPAM ingredient import cost modeling.</p><div style="display:flex;gap:4px;flex-wrap:wrap"><span style="font-size:9px;padding:2px 6px;background:#EEF0E6;color:#5A6355;border-radius:3px">Shanghai-LA $/FEU</span> <span style="font-size:9px;padding:2px 6px;background:#EEF0E6;color:#5A6355;border-radius:3px">Rotterdam-NY $/FEU</span></div></div><a href="https://www.drewry.co.uk/supply-chain-advisors/supply-chain-expertise/world-container-index-assessed-by-drewry" target="_blank" style="font-size:10px;padding:4px 10px;border-radius:3px;background:#EEF0E6;color:#4A5548;flex-shrink:0;white-space:nowrap;border:1px solid rgba(40,58,30,.15)">Open &#8599;</a></div>
+<div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-radius:4px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px"><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><a href="https://www.freightos.com/enterprise/terminal/freightos-baltic-index-global-container-pricing-index" target="_blank" style="font-size:13px;font-weight:700;color:#1A5CA5;text-decoration:underline">Freightos Baltic Index (FBX)</a><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.07em;background:#E0EDCC;color:#2E4A20">LIVE</span></div><p style="font-size:11px;color:#4A5548;margin:0 0 6px;line-height:1.5">Daily FCL rates across 12 trade lanes. Critical for tracking Hormel SPAM ingredient import costs and Q4 holiday production FCL timing.</p><div style="display:flex;gap:4px;flex-wrap:wrap"><span style="font-size:9px;padding:2px 6px;background:#EEF0E6;color:#5A6355;border-radius:3px">Global container index</span> <span style="font-size:9px;padding:2px 6px;background:#EEF0E6;color:#5A6355;border-radius:3px">Trans-Pacific</span></div></div><a href="https://www.freightos.com/enterprise/terminal/freightos-baltic-index-global-container-pricing-index" target="_blank" style="font-size:10px;padding:4px 10px;border-radius:3px;background:#EEF0E6;color:#4A5548;flex-shrink:0;white-space:nowrap;border:1px solid rgba(40,58,30,.15)">Open &#8599;</a></div>
+<div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-radius:4px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px"><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><a href="https://www.xeneta.com/ocean-freight-rates" target="_blank" style="font-size:13px;font-weight:700;color:#1A5CA5;text-decoration:underline">Xeneta Ocean Benchmarks</a><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.07em;background:#EEF0E6;color:#5A6355">REF</span></div><p style="font-size:11px;color:#4A5548;margin:0 0 6px;line-height:1.5">Crowd-sourced ocean rate benchmarking. Validates Hormel contract rates against market for annual ocean carrier RFP cycle.</p><div style="display:flex;gap:4px;flex-wrap:wrap"><span style="font-size:9px;padding:2px 6px;background:#EEF0E6;color:#5A6355;border-radius:3px">Contract benchmarks</span></div></div><a href="https://www.xeneta.com/ocean-freight-rates" target="_blank" style="font-size:10px;padding:4px 10px;border-radius:3px;background:#EEF0E6;color:#4A5548;flex-shrink:0;white-space:nowrap;border:1px solid rgba(40,58,30,.15)">Open &#8599;</a></div>
+<p style="font-size:11px;font-weight:700;color:#1A2816;text-transform:uppercase;letter-spacing:.1em;padding-bottom:5px;border-bottom:2px solid #3B5E28;display:inline-block;margin:14px 0 10px">Intermodal, Rail & LTL</p>
+<div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-radius:4px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px"><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><a href="https://draynow.com/draynow-intermodal-spot-rate-tracker" target="_blank" style="font-size:13px;font-weight:700;color:#1A5CA5;text-decoration:underline">DrayNow Spot Rate Tracker</a><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.07em;background:#E0EDCC;color:#2E4A20">LIVE</span></div><p style="font-size:11px;color:#4A5548;margin:0 0 6px;line-height:1.5">Weekly intermodal spot rate updates. Primary source for LA/LB to Austin MN ingredient import drayage cost monitoring.</p><div style="display:flex;gap:4px;flex-wrap:wrap"><span style="font-size:9px;padding:2px 6px;background:#EEF0E6;color:#5A6355;border-radius:3px">Intermodal spot rates</span></div></div><a href="https://draynow.com/draynow-intermodal-spot-rate-tracker" target="_blank" style="font-size:10px;padding:4px 10px;border-radius:3px;background:#EEF0E6;color:#4A5548;flex-shrink:0;white-space:nowrap;border:1px solid rgba(40,58,30,.15)">Open &#8599;</a></div>
+<div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-radius:4px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px"><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><a href="https://www.intermodal.org/resources/statistics" target="_blank" style="font-size:13px;font-weight:700;color:#1A5CA5;text-decoration:underline">IANA Statistics</a><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.07em;background:#E0EDCC;color:#2E4A20">LIVE</span></div><p style="font-size:11px;color:#4A5548;margin:0 0 6px;line-height:1.5">Quarterly intermodal volume and equipment statistics. Tracks LA/LB to Midwest ingredient import drayage capacity trends.</p><div style="display:flex;gap:4px;flex-wrap:wrap"><span style="font-size:9px;padding:2px 6px;background:#EEF0E6;color:#5A6355;border-radius:3px">Volumes</span> <span style="font-size:9px;padding:2px 6px;background:#EEF0E6;color:#5A6355;border-radius:3px">Dwell time</span></div></div><a href="https://www.intermodal.org/resources/statistics" target="_blank" style="font-size:10px;padding:4px 10px;border-radius:3px;background:#EEF0E6;color:#4A5548;flex-shrink:0;white-space:nowrap;border:1px solid rgba(40,58,30,.15)">Open &#8599;</a></div>
+<div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-radius:4px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px"><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><a href="https://www.aar.org/data/weekly-railroad-traffic" target="_blank" style="font-size:13px;font-weight:700;color:#1A5CA5;text-decoration:underline">AAR Weekly Rail Traffic</a><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.07em;background:#E0EDCC;color:#2E4A20">LIVE</span></div><p style="font-size:11px;color:#4A5548;margin:0 0 6px;line-height:1.5">Weekly rail traffic and carload data. Grain and ingredient bulk movement capacity signals affecting Hormel raw material costs.</p><div style="display:flex;gap:4px;flex-wrap:wrap"><span style="font-size:9px;padding:2px 6px;background:#EEF0E6;color:#5A6355;border-radius:3px">Rail Carload</span></div></div><a href="https://www.aar.org/data/weekly-railroad-traffic" target="_blank" style="font-size:10px;padding:4px 10px;border-radius:3px;background:#EEF0E6;color:#4A5548;flex-shrink:0;white-space:nowrap;border:1px solid rgba(40,58,30,.15)">Open &#8599;</a></div>
+<div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-radius:4px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px"><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><a href="https://www.cassinfo.com/freight-audit-payment/cass-transportation-indexes" target="_blank" style="font-size:13px;font-weight:700;color:#1A5CA5;text-decoration:underline">Cass Transportation Index</a><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.07em;background:#E0EDCC;color:#2E4A20">LIVE</span></div><p style="font-size:11px;color:#4A5548;margin:0 0 6px;line-height:1.5">All-mode freight expenditure index. Benchmarks Hormel shelf-stable LTL distribution spend for renegotiation leverage.</p><div style="display:flex;gap:4px;flex-wrap:wrap"><span style="font-size:9px;padding:2px 6px;background:#EEF0E6;color:#5A6355;border-radius:3px">LTL expenditure</span></div></div><a href="https://www.cassinfo.com/freight-audit-payment/cass-transportation-indexes" target="_blank" style="font-size:10px;padding:4px 10px;border-radius:3px;background:#EEF0E6;color:#4A5548;flex-shrink:0;white-space:nowrap;border:1px solid rgba(40,58,30,.15)">Open &#8599;</a></div>
+<p style="font-size:11px;font-weight:700;color:#1A2816;text-transform:uppercase;letter-spacing:.1em;padding-bottom:5px;border-bottom:2px solid #3B5E28;display:inline-block;margin:14px 0 10px">Air Freight & Fuel</p>
+<div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-radius:4px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px"><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><a href="https://terminal.freightos.com" target="_blank" style="font-size:13px;font-weight:700;color:#1A5CA5;text-decoration:underline">Freightos Air Index (FAX)</a><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.07em;background:#E0EDCC;color:#2E4A20">LIVE</span></div><p style="font-size:11px;color:#4A5548;margin:0 0 6px;line-height:1.5">Daily air cargo rates. Used for Hormel emergency ingredient shortfall scenarios and time-sensitive specialty sourcing.</p><div style="display:flex;gap:4px;flex-wrap:wrap"><span style="font-size:9px;padding:2px 6px;background:#EEF0E6;color:#5A6355;border-radius:3px">Air Freight $/kg</span></div></div><a href="https://terminal.freightos.com" target="_blank" style="font-size:10px;padding:4px 10px;border-radius:3px;background:#EEF0E6;color:#4A5548;flex-shrink:0;white-space:nowrap;border:1px solid rgba(40,58,30,.15)">Open &#8599;</a></div>
+<div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-radius:4px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px"><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><a href="https://www.eia.gov/petroleum/gasdiesel" target="_blank" style="font-size:13px;font-weight:700;color:#1A5CA5;text-decoration:underline">U.S. EIA Diesel & Jet Fuel</a><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.07em;background:#E0EDCC;color:#2E4A20">LIVE</span></div><p style="font-size:11px;color:#4A5548;margin:0 0 6px;line-height:1.5">Federal source for weekly diesel prices by region. Direct input to fuel surcharge calculations for all Hormel TL carriers from Austin MN, Rochelle IL, Fremont NE, and Stockton CA.</p><div style="display:flex;gap:4px;flex-wrap:wrap"><span style="font-size:9px;padding:2px 6px;background:#EEF0E6;color:#5A6355;border-radius:3px">Diesel $/gal</span> <span style="font-size:9px;padding:2px 6px;background:#EEF0E6;color:#5A6355;border-radius:3px">FSC Index</span></div></div><a href="https://www.eia.gov/petroleum/gasdiesel" target="_blank" style="font-size:10px;padding:4px 10px;border-radius:3px;background:#EEF0E6;color:#4A5548;flex-shrink:0;white-space:nowrap;border:1px solid rgba(40,58,30,.15)">Open &#8599;</a></div>
+<div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-radius:4px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px"><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><a href="https://www.ups.com/us/en/supplychain/tools/surcharges" target="_blank" style="font-size:13px;font-weight:700;color:#1A5CA5;text-decoration:underline">UPS / FedEx Surcharge Tables</a><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.07em;background:#EEF0E6;color:#5A6355">REF</span></div><p style="font-size:11px;color:#4A5548;margin:0 0 6px;line-height:1.5">Monthly published fuel and delivery area surcharge tables. Key reference for Hormel.com DTC parcel and corporate gifting program cost modeling.</p><div style="display:flex;gap:4px;flex-wrap:wrap"><span style="font-size:9px;padding:2px 6px;background:#EEF0E6;color:#5A6355;border-radius:3px">Parcel FSC</span> <span style="font-size:9px;padding:2px 6px;background:#EEF0E6;color:#5A6355;border-radius:3px">Residential DAS</span></div></div><a href="https://www.ups.com/us/en/supplychain/tools/surcharges" target="_blank" style="font-size:10px;padding:4px 10px;border-radius:3px;background:#EEF0E6;color:#4A5548;flex-shrink:0;white-space:nowrap;border:1px solid rgba(40,58,30,.15)">Open &#8599;</a></div>
+</div>
+</div>
+<div class="ftr"><p>&copy; Hormel Foods Corporation &nbsp;&middot;&nbsp; Transportation Cost Intelligence &nbsp;&middot;&nbsp; CPG Freight Market Signals &nbsp;&middot;&nbsp; Daily data refresh at noon EST via OpenAI</p></div>
+
+<!-- ── Screener Copilot ── -->
+<button id="copilot-fab" class="no-print" onclick="toggleCopilot()"><span class="cp-dot"></span>Ask the Screener Copilot</button>
+<div id="copilot-panel" class="no-print">
+  <div class="cp-head">
+    <div>
+      <div class="cp-title">Screener Copilot</div>
+      <div class="cp-sub">Freight market guidance for Hormel</div>
+    </div>
+    <button class="cp-x" onclick="toggleCopilot()" title="Close">&times;</button>
+  </div>
+  <div class="cp-body" id="cp-body">
+    <div class="cp-msg bot">Hi — I'm your freight market copilot. I can explain the current rates, summarize what matters, recommend actions, and point you to the right tab. What would you like to know?</div>
+    <div class="cp-starters" id="cp-starters">
+      <button class="cp-starter" onclick="cpAsk(this.textContent)">What are the most urgent actions I should take today?</button>
+      <button class="cp-starter" onclick="cpAsk(this.textContent)">Why is the reefer market tightening and how exposed are we?</button>
+      <button class="cp-starter" onclick="cpAsk(this.textContent)">Summarize today's market in 3 bullets.</button>
+      <button class="cp-starter" onclick="cpAsk(this.textContent)">Where should I focus to protect Walmart OTIF?</button>
+    </div>
+  </div>
+  <div class="cp-foot">
+    <textarea class="cp-input" id="cp-input" rows="1" placeholder="Ask about rates, actions, lanes…" onkeydown="cpKey(event)"></textarea>
+    <button class="cp-send" id="cp-send" onclick="cpSend()">Send</button>
+  </div>
+  <div class="cp-disclaimer">AI-generated guidance grounded in dashboard data. Verify before acting.</div>
+</div>
+
+<script>
+
+var LANES_DATA=[{"id": 1, "hist": [3.52, 3.55, 3.58, 3.62, 3.65, 3.67, 3.71, 3.74, 3.77, 3.79, 3.81, 3.82], "s": "$3.82/mi", "c30": 9.2, "o": "Austin MN", "d": "Walmart DC Sanger TX", "m": "Reefer TL", "note": "Hormel / Applegate"}, {"id": 2, "hist": [3.15, 3.18, 3.21, 3.24, 3.26, 3.28, 3.31, 3.34, 3.37, 3.4, 3.44, 3.47], "s": "$3.47/mi", "c30": 7.8, "o": "Austin MN", "d": "Los Angeles CA", "m": "Reefer TL", "note": "Hormel Refrigerated"}, {"id": 3, "hist": [3.1, 3.13, 3.16, 3.19, 3.22, 3.24, 3.27, 3.3, 3.33, 3.36, 3.39, 3.41], "s": "$3.41/mi", "c30": 7.2, "o": "Rochelle IL", "d": "Northeast US", "m": "Reefer TL", "note": "Applegate Organic"}, {"id": 4, "hist": [2.62, 2.64, 2.67, 2.69, 2.71, 2.7, 2.72, 2.74, 2.76, 2.77, 2.77, 2.78], "s": "$2.78/mi", "c30": 5.4, "o": "Austin MN", "d": "Walmart DC Winchester VA", "m": "Dry Van TL", "note": "SPAM / Shelf-Stable"}, {"id": 5, "hist": [2.74, 2.73, 2.72, 2.71, 2.7, 2.7, 2.69, 2.68, 2.67, 2.65, 2.63, 2.61], "s": "$2.61/mi", "c30": -2.3, "o": "Fremont NE", "d": "Southeast US", "m": "Dry Van TL", "note": "Justin's / Nut Butter"}, {"id": 6, "hist": [3780, 3650, 3560, 3490, 3420, 3375, 3340, 3310, 3285, 3265, 3248, 3240], "s": "$3,240/FEU", "c30": -8.3, "o": "Shanghai CN", "d": "LA/LB Port CA", "m": "Ocean FCL", "note": "SPAM Packaging + Soy"}, {"id": 7, "hist": [3480, 3500, 3520, 3540, 3560, 3580, 3600, 3640, 3680, 3720, 3760, 3800], "s": "$3,800/load", "c30": 9.1, "o": "Monterrey MX", "d": "Austin MN", "m": "Cross-Border TL", "note": "Protein Ingredients"}, {"id": 8, "hist": [2280, 2270, 2260, 2250, 2240, 2230, 2220, 2215, 2210, 2200, 2190, 2180], "s": "$2,180/FEU", "c30": -2.1, "o": "LA/LB Port CA", "d": "Austin MN", "m": "Intermodal", "note": "Ingredient Import Drayage"}, {"id": 9, "hist": [3.22, 3.26, 3.3, 3.34, 3.37, 3.39, 3.42, 3.45, 3.48, 3.51, 3.53, 3.55], "s": "$3.55/mi", "c30": 8.8, "o": "Austin MN", "d": "Target DC Lacey WA", "m": "Reefer TL", "note": "Hormel Refrigerated"}, {"id": 10, "hist": [2.82, 2.83, 2.84, 2.85, 2.86, 2.85, 2.87, 2.88, 2.9, 2.91, 2.93, 2.95], "s": "$2.95/mi", "c30": 4.8, "o": "Stockton CA", "d": "Pacific Northwest", "m": "Dry Van TL", "note": "Columbus Craft Meats"}];
+var MODES_FC=[{"id": "reefer", "n": "Reefer TL", "rn": 3.47, "rate": "$3.47/mi", "fc30": 3.65, "fcbull": 3.52, "fcbear": 3.92, "hist": [3.1, 3.14, 3.18, 3.22, 3.26, 3.28, 3.31, 3.35, 3.39, 3.42, 3.45, 3.47], "src": "DAT Reefer", "dir": "HEADWIND", "ctx": "Applegate + Hormel Refrigerated"}, {"id": "dryvan", "n": "Dry Van TL", "rn": 2.84, "rate": "$2.84/mi", "fc30": 2.98, "fcbull": 2.82, "fcbear": 3.14, "hist": [2.62, 2.64, 2.67, 2.7, 2.72, 2.71, 2.74, 2.77, 2.8, 2.81, 2.83, 2.84], "src": "DAT Dry Van", "dir": "HEADWIND", "ctx": "SPAM, Canned Goods, Shelf-Stable"}, {"id": "ltl", "n": "LTL", "rn": 98.4, "rate": "$98.4/cwt", "fc30": 97.2, "fcbull": 95.8, "fcbear": 99.6, "hist": [99.8, 100.1, 99.9, 99.6, 99.3, 99.1, 98.9, 98.9, 98.7, 98.5, 98.5, 98.4], "src": "Cass Index", "dir": "TAILWIND", "ctx": "Secondary & DSD Distribution"}, {"id": "imdl", "n": "Intermodal", "rn": 2.18, "rate": "$2.18/mi", "fc30": 2.28, "fcbull": 2.12, "fcbear": 2.38, "hist": [2.08, 2.1, 2.11, 2.12, 2.13, 2.12, 2.14, 2.15, 2.16, 2.17, 2.17, 2.18], "src": "DrayNow / IANA", "dir": "HEADWIND", "ctx": "Import Drayage \u2014 LA/LB to Midwest"}, {"id": "ocean", "n": "Ocean FCL", "rn": 3240, "rate": "$3,240/FEU", "fc30": 3420, "fcbull": 3180, "fcbear": 3820, "hist": [3780, 3650, 3560, 3490, 3420, 3375, 3340, 3310, 3285, 3265, 3248, 3240], "src": "Drewry WCI", "dir": "TAILWIND", "ctx": "SPAM Ingredients \u2014 Buy Window Open"}, {"id": "air", "n": "Air Freight", "rn": 4.82, "rate": "$4.82/kg", "fc30": 5.08, "fcbull": 4.82, "fcbear": 5.42, "hist": [4.6, 4.62, 4.64, 4.65, 4.67, 4.69, 4.71, 4.73, 4.76, 4.79, 4.81, 4.82], "src": "Freightos FAX", "dir": "HEADWIND", "ctx": "Emergency Ingredient Shortfalls"}, {"id": "rail", "n": "Rail Carload", "rn": 1.92, "rate": "$1.92/mi", "fc30": 1.94, "fcbull": 1.9, "fcbear": 1.98, "hist": [1.9, 1.91, 1.91, 1.91, 1.92, 1.91, 1.91, 1.92, 1.92, 1.92, 1.92, 1.92], "src": "AAR Weekly", "dir": "NEUTRAL", "ctx": "Grain & Bulk Ingredient Movements"}, {"id": "parcel", "n": "Parcel / DTC", "rn": 8.94, "rate": "$8.94/pkg", "fc30": 8.88, "fcbull": 8.72, "fcbear": 9.08, "hist": [9.02, 9.01, 9.01, 9.0, 8.99, 8.98, 8.97, 8.96, 8.95, 8.95, 8.94, 8.94], "src": "ShipMatrix", "dir": "TAILWIND", "ctx": "Hormel.com + Corporate Gifting"}];
+
+var selLane=null, modeF='ALL', riskF='ALL', dirF='ALL';
+var PANE_IDS = ['overview','signals','network','actions','forecast','sources'];
+
+function switchTab(id) {
+  PANE_IDS.forEach(function(pid) {
+    var el = document.getElementById('pane-'+pid);
+    if (el) el.style.display = pid===id ? 'block' : 'none';
+  });
+  document.querySelectorAll('[data-tab]').forEach(function(b) {
+    b.className = b.className.replace(' ag','').replace('ag ','');
+    if (b.getAttribute('data-tab')===id) b.className += ' ag';
+  });
+  if (id==='forecast') setTimeout(function(){ renderFcChart(currentFcMode); }, 50);
+  history.replaceState(null,'','#'+id);
+}
+
+function setModeF(m) {
+  modeF=m;
+  document.querySelectorAll('[id^="tm-"]').forEach(function(b){
+    b.className=b.className.replace(' ag','').replace('ag ','');
+  });
+  var e=document.getElementById('tm-'+m); if(e) e.className+=' ag';
+  filterSigs();
+}
+function setRiskF(r) {
+  riskF=r;
+  document.querySelectorAll('[id^="tr-"]').forEach(function(b){
+    b.className=b.className.replace(' ao','').replace('ao ','');
+  });
+  var map={'ALL':'tr-ALL','HIGH RISK':'tr-HIGH','WATCH':'tr-WATCH','EASING':'tr-EASE'};
+  var e=document.getElementById(map[r]); if(e) e.className+=' ao';
+  filterSigs();
+}
+function setDirF(d) {
+  dirF=d;
+  document.querySelectorAll('[id^="td-"]').forEach(function(b){
+    b.className=b.className.replace(' sa','').replace('sa ','');
+  });
+  var e=document.getElementById('td-'+d); if(e) e.className+=' sa';
+  filterSigs();
+}
+function filterSigs() {
+  document.querySelectorAll('.sig-card').forEach(function(card) {
+    var modes=card.getAttribute('data-modes')||'';
+    var risk=card.getAttribute('data-risk')||'';
+    var dir=card.getAttribute('data-dir')||'';
+    var mOk=modeF==='ALL'||modes.indexOf(modeF)>=0;
+    var rOk=riskF==='ALL'||risk===riskF;
+    var dOk=dirF==='ALL'||dir===dirF;
+    card.style.display=(mOk&&rOk&&dOk)?'flex':'none';
+  });
+}
+
+function toggleLane(id) {
+  var det=document.getElementById('lane-det');
+  if(selLane===id){
+    selLane=null;
+    document.querySelectorAll('.lane-row').forEach(function(r){r.classList.remove('sel');});
+    det.classList.remove('open');
+    return;
+  }
+  selLane=id;
+  document.querySelectorAll('.lane-row').forEach(function(r){
+    r.classList.toggle('sel',r.getAttribute('data-id')===String(id));
+  });
+  var lane=null;
+  for(var i=0;i<LANES_DATA.length;i++){if(LANES_DATA[i].id===id){lane=LANES_DATA[i];break;}}
+  if(!lane) return;
+  var hist=lane.hist,mn=Math.min.apply(null,hist),mx=Math.max.apply(null,hist),rng=mx-mn||0.01;
+  var W=580,H=110,ML=48,MB=18,MT=6,MR=10,cw=W-ML-MR,ch=H-MT-MB;
+  var xs=function(i){return(i/(hist.length-1))*cw;};
+  var ys=function(v){return ch-((v-mn)/rng)*ch;};
+  var pts=hist.map(function(v,i){return xs(i).toFixed(1)+','+ys(v).toFixed(1);}).join(' ');
+  var c30=lane.c30,col=c30>=0?'#C83020':'#3B5E28',sym=c30>=0?'&#9650;':'&#9660;';
+  var grid='';
+  for(var j=0;j<4;j++){
+    var v=mn+(mx-mn)*j/3,y=ys(v).toFixed(1),vf=v>100?Math.round(v).toString():v.toFixed(2);
+    grid+='<line x1="0" y1="'+y+'" x2="'+cw+'" y2="'+y+'" stroke="rgba(40,58,30,.07)"/>';
+    grid+='<text x="-4" y="'+y+'" font-size="9" fill="#7A8575" text-anchor="end" dominant-baseline="middle">'+vf+'</text>';
+  }
+  var xl='';
+  [0,2,4,6,8,11].forEach(function(si){
+    xl+='<text x="'+xs(si).toFixed(1)+'" y="'+(ch+13)+'" font-size="9" fill="#7A8575" text-anchor="middle">'+(si===hist.length-1?'Now':'W'+(si-11))+'</text>';
+  });
+  det.innerHTML='<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px">'
+    +'<div><p style="font-size:13px;font-weight:700;color:#1A2816;margin:0 0 2px">'+lane.o+' to '+lane.d+'</p>'
+    +'<p style="font-size:11px;color:#7A8575;margin:0">'+lane.m+' | '+lane.note+'</p></div>'
+    +'<div style="text-align:right;flex-shrink:0;margin-left:16px">'
+    +'<p style="font-size:18px;font-weight:700;font-family:monospace;color:#1A2816;margin:0 0 2px">'+lane.s+'</p>'
+    +'<span style="font-size:12px;font-weight:700;color:'+col+'">'+sym+Math.abs(c30).toFixed(1)+'%</span>'
+    +'<span style="font-size:11px;color:#7A8575;margin-left:4px">30-day</span></div></div>'
+    +'<svg width="100%" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet" style="display:block">'
+    +'<g transform="translate('+ML+','+MT+')">'+grid
+    +'<polyline points="'+pts+'" fill="none" stroke="'+col+'" stroke-width="2" stroke-linecap="round"/>'+xl
+    +'</g></svg>';
+  det.classList.add('open');
+}
+
+var currentFcMode='reefer';
+function setFcMode(id) {
+  currentFcMode=id;
+  document.querySelectorAll('.fc-mode-btn').forEach(function(b){b.className=b.className.replace(' fma','');});
+  var btn=document.querySelector('[data-mid="'+id+'"]'); if(btn) btn.className+=' fma';
+  renderFcChart(id);
+}
+function renderFcChart(id) {
+  var mode=null;
+  for(var i=0;i<MODES_FC.length;i++){if(MODES_FC[i].id===id){mode=MODES_FC[i];break;}}
+  if(!mode) return;
+  var el=document.getElementById('fc-chart-area'); if(!el) return;
+  var hist=mode.hist,rn=mode.rn,fc30=mode.fc30,fcbull=mode.fcbull,fcbear=mode.fcbear;
+  var steps=4;
+  var future=[];
+  for(var w=1;w<=steps;w++){
+    future.push({base:rn+(fc30-rn)*w/steps,bull:rn+(fcbull-rn)*w/steps,bear:rn+(fcbear-rn)*w/steps});
+  }
+  var allVals=hist.slice();
+  future.forEach(function(f){allVals.push(f.base,f.bull,f.bear);});
+  var mn=Math.min.apply(null,allVals)*0.997,mx=Math.max.apply(null,allVals)*1.003,rng=mx-mn||0.01;
+  var W=640,H=180,ML=52,MB=20,MT=10,MR=12,cw=W-ML-MR,ch=H-MT-MB;
+  var totalPts=hist.length+steps;
+  var xs=function(i){return(i/(totalPts-1))*cw;};
+  var ys=function(v){return ch-((v-mn)/rng)*ch;};
+  var histPts=hist.map(function(v,i){return xs(i).toFixed(1)+','+ys(v).toFixed(1);}).join(' ');
+  var nowI=hist.length-1;
+  var bPts=[xs(nowI).toFixed(1)+','+ys(rn).toFixed(1)];
+  var buPts=[xs(nowI).toFixed(1)+','+ys(rn).toFixed(1)];
+  var bePts=[xs(nowI).toFixed(1)+','+ys(rn).toFixed(1)];
+  future.forEach(function(f,i){
+    bPts.push(xs(nowI+1+i).toFixed(1)+','+ys(f.base).toFixed(1));
+    buPts.push(xs(nowI+1+i).toFixed(1)+','+ys(f.bull).toFixed(1));
+    bePts.push(xs(nowI+1+i).toFixed(1)+','+ys(f.bear).toFixed(1));
+  });
+  var grid='';
+  for(var j=0;j<5;j++){
+    var v=mn+(mx-mn)*j/4,y=ys(v).toFixed(1),vf=v>100?Math.round(v).toString():v.toFixed(2);
+    grid+='<line x1="0" y1="'+y+'" x2="'+cw+'" y2="'+y+'" stroke="rgba(40,58,30,.07)"/>';
+    grid+='<text x="-4" y="'+y+'" font-size="9" fill="#7A8575" text-anchor="end" dominant-baseline="middle">'+vf+'</text>';
+  }
+  var nowLine='<line x1="'+xs(nowI).toFixed(1)+'" y1="0" x2="'+xs(nowI).toFixed(1)+'" y2="'+ch+'" stroke="rgba(40,58,30,.2)" stroke-dasharray="4 2"/>';
+  var xl='';
+  var step2=Math.max(1,Math.floor(totalPts/8));
+  for(var k=0;k<totalPts;k+=step2){
+    var lbl=k<hist.length?('W'+(k-hist.length+1)):('+'+( k-hist.length+1)+'W');
+    xl+='<text x="'+xs(k).toFixed(1)+'" y="'+(ch+15)+'" font-size="9" fill="#7A8575" text-anchor="middle">'+lbl+'</text>';
+  }
+  var up=fc30>rn;
+  var baseCol=up?'#C83020':'#3B5E28';
+  var pctF=function(v){return((v-rn)/rn*100).toFixed(1)+'%';};
+  var fmtV=function(v){return v>100?'$'+Math.round(v):'$'+v.toFixed(2);};
+  var statsHtml='<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:12px">'
+    +'<div style="background:#F0F1E8;border-radius:4px;padding:10px 12px"><p style="font-size:9px;color:#7A8575;text-transform:uppercase;letter-spacing:.07em;margin:0 0 3px">Current</p><p style="font-size:15px;font-weight:700;font-family:monospace;color:#1A2816;margin:0">'+mode.rate+'</p></div>'
+    +'<div style="background:#F0F1E8;border-radius:4px;padding:10px 12px"><p style="font-size:9px;color:#7A8575;text-transform:uppercase;letter-spacing:.07em;margin:0 0 3px">Base Case 30D</p><p style="font-size:15px;font-weight:700;font-family:monospace;color:'+baseCol+';margin:0">'+fmtV(fc30)+'</p><p style="font-size:10px;color:#7A8575;margin:2px 0 0">'+(up?'+':'')+pctF(fc30)+' vs now</p></div>'
+    +'<div style="background:#E0EDCC;border-radius:4px;padding:10px 12px"><p style="font-size:9px;color:#2E4A20;text-transform:uppercase;letter-spacing:.07em;margin:0 0 3px">Bull (rates fall)</p><p style="font-size:15px;font-weight:700;font-family:monospace;color:#2E4A20;margin:0">'+fmtV(fcbull)+'</p><p style="font-size:10px;color:#2E4A20;margin:2px 0 0">'+pctF(fcbull)+' vs now</p></div>'
+    +'<div style="background:#FDE8E5;border-radius:4px;padding:10px 12px"><p style="font-size:9px;color:#A02010;text-transform:uppercase;letter-spacing:.07em;margin:0 0 3px">Bear (rates rise)</p><p style="font-size:15px;font-weight:700;font-family:monospace;color:#A02010;margin:0">'+fmtV(fcbear)+'</p><p style="font-size:10px;color:#A02010;margin:2px 0 0">+'+pctF(fcbear)+' vs now</p></div>'
+    +'</div>';
+  var chartSvg='<svg width="100%" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet" style="display:block">'
+    +'<g transform="translate('+ML+','+MT+')">'+grid+nowLine
+    +'<polyline points="'+histPts+'" fill="none" stroke="#B4B2A9" stroke-width="2" stroke-linecap="round"/>'
+    +'<polyline points="'+bePts.join(' ')+'" fill="none" stroke="#E24B4A" stroke-width="1.2" stroke-dasharray="3 3"/>'
+    +'<polyline points="'+buPts.join(' ')+'" fill="none" stroke="#639922" stroke-width="1.2" stroke-dasharray="3 3"/>'
+    +'<polyline points="'+bPts.join(' ')+'" fill="none" stroke="'+baseCol+'" stroke-width="2" stroke-dasharray="5 2"/>'+xl
+    +'</g></svg>';
+  var legendHtml='<div style="display:flex;gap:16px;margin-top:10px;flex-wrap:wrap">'
+    +'<span style="font-size:11px;color:#7A8575;display:flex;align-items:center;gap:5px"><svg width="20" height="8"><line x1="0" y1="4" x2="20" y2="4" stroke="#B4B2A9" stroke-width="2"/></svg>Historical</span>'
+    +'<span style="font-size:11px;color:#7A8575;display:flex;align-items:center;gap:5px"><svg width="20" height="8"><line x1="0" y1="4" x2="20" y2="4" stroke="'+baseCol+'" stroke-width="2" stroke-dasharray="5 2"/></svg>Base forecast</span>'
+    +'<span style="font-size:11px;color:#7A8575;display:flex;align-items:center;gap:5px"><svg width="20" height="8"><line x1="0" y1="4" x2="20" y2="4" stroke="#639922" stroke-width="1.5" stroke-dasharray="3 3"/></svg>Bull (rates fall)</span>'
+    +'<span style="font-size:11px;color:#7A8575;display:flex;align-items:center;gap:5px"><svg width="20" height="8"><line x1="0" y1="4" x2="20" y2="4" stroke="#E24B4A" stroke-width="1.5" stroke-dasharray="3 3"/></svg>Bear (rates rise)</span>'
+    +'</div>';
+  el.innerHTML=statsHtml+chartSvg+legendHtml+'<p style="font-size:11px;color:#7A8575;margin-top:8px">'+mode.src+' | '+mode.ctx+'</p>';
+}
+
+// ── Data loading from /api/data ────────────────────────────────────────────
+function loadData(manual) {
+  var btn=document.getElementById('rbtn'),lbl=document.getElementById('rlbl'),dot=document.getElementById('rdot');
+  if(manual){btn.disabled=true;lbl.textContent='LOADING...';dot.style.animation='spin .7s linear infinite';}
+  document.getElementById('aerr').classList.remove('on');
+  fetch('/api/data')
+    .then(function(r){return r.json();})
+    .then(function(resp){
+      if(resp.status==='ok' && resp.current){
+        applyData(resp.current, resp.previous, resp.next_refresh_utc);
+        if(manual){
+          document.getElementById('anote-txt').textContent='Data loaded — as of '+fmtTs(resp.current.fetched_at);
+          document.getElementById('anote').classList.add('on');
+        }
+      } else {
+        document.getElementById('last-upd').textContent='Awaiting first refresh';
+        document.getElementById('next-ref').textContent='noon EST';
+      }
+    })
+    .catch(function(){
+      if(manual) showErr('Could not load data. Try again shortly.');
+    })
+    .finally(function(){
+      if(manual){btn.disabled=false;lbl.textContent='REFRESH NOW';dot.style.animation='blink 2s ease-in-out infinite';}
+    });
+}
+
+function applyData(cur, prev) {
+  // Intelligence summary
+  if(cur.intel_summary) document.getElementById('intel-txt').textContent=cur.intel_summary;
+
+  // Last updated timestamp
+  document.getElementById('last-upd').textContent=fmtTs(cur.fetched_at);
+
+  // Next refresh countdown
+  var nextUtc=new Date();
+  nextUtc.setUTCHours(17,0,0,0);
+  if(nextUtc<=new Date()) nextUtc.setUTCDate(nextUtc.getUTCDate()+1);
+  var hoursUntil=Math.round((nextUtc-new Date())/3600000);
+  document.getElementById('next-ref').textContent=hoursUntil+'h (noon EST)';
+
+  // Delta badges (vs previous refresh)
+  if(prev){
+    showDelta('delta-reefer', cur.reefer&&cur.reefer.rate, prev.reefer&&prev.reefer.rate, '$', '/mi');
+    showDelta('delta-dryvan', cur.dryvan&&cur.dryvan.rate, prev.dryvan&&prev.dryvan.rate, '$', '/mi');
+    showDelta('delta-ocean', cur.ocean_sh_la&&cur.ocean_sh_la.rate, prev.ocean_sh_la&&prev.ocean_sh_la.rate, '$', '/FEU');
+    showDelta('delta-diesel', cur.diesel&&cur.diesel.price, prev.diesel&&prev.diesel.price, '$', '/gal');
+  }
+
+  // Escalation check
+  checkEscalations(cur);
+}
+
+function showDelta(id, cur, prv, prefix, suffix) {
+  var el=document.getElementById(id); if(!el||cur==null||prv==null) return;
+  var diff=cur-prv, pct=prv?(diff/prv*100):0;
+  if(Math.abs(diff)<0.001){el.className='delta-badge delta-flat';el.textContent='=';return;}
+  var up=diff>0;
+  el.className='delta-badge '+(up?'delta-up':'delta-dn');
+  el.textContent=(up?'▲':'▼')+Math.abs(pct).toFixed(1)+'% vs yesterday';
+}
+
+function fmtTs(iso){
+  if(!iso) return 'N/A';
+  try{return new Date(iso).toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',timeZoneName:'short'});}
+  catch(e){return iso;}
+}
+
+// ── Escalation banner ───────────────────────────────────────────────────────
+var ESCALATION_THRESHOLDS=[
+  {label:'Reefer TL ≥$4.00/mi', fn:function(d){return d.reefer&&d.reefer.rate>=4.00;}},
+  {label:'Walmart OTIF <95%', fn:function(d){return false;}}, // static KPI, kept for extensibility
+  {label:'Tender rejection ≥25%', fn:function(d){return d.tender_rej&&d.tender_rej.pct>=25;}},
+];
+function checkEscalations(data){
+  var triggered=ESCALATION_THRESHOLDS.filter(function(t){return t.fn(data);}).map(function(t){return t.label;});
+  var banner=document.getElementById('esc-banner');
+  var badge=document.getElementById('actions-badge');
+  if(triggered.length){
+    document.getElementById('esc-banner-txt').textContent=triggered.length+' Escalation Trigger'+(triggered.length>1?'s':'')+' Active: '+triggered.join(' · ');
+    banner.style.display='flex';
+    badge.style.display='inline-block';
+    badge.textContent=triggered.length;
+  } else {
+    banner.style.display='none';
+    badge.style.display='none';
+  }
+}
+
+// ── Action checklist (localStorage) ────────────────────────────────────────
+var ACTION_TOTAL=7;
+function initActionChecklist(){
+  var cards=document.querySelectorAll('#pane-actions [data-action-id]');
+  updateActionCounter();
+  cards.forEach(function(card){
+    var id=card.getAttribute('data-action-id');
+    var cb=card.querySelector('.action-item-check');
+    if(!cb) return;
+    var done=localStorage.getItem('action-'+id)==='1';
+    cb.checked=done;
+    if(done) card.querySelector('.action-body').classList.add('action-done');
+    cb.addEventListener('change',function(){
+      localStorage.setItem('action-'+id, cb.checked?'1':'0');
+      card.querySelector('.action-body').classList.toggle('action-done',cb.checked);
+      updateActionCounter();
+    });
+  });
+}
+function updateActionCounter(){
+  var done=0;
+  for(var i=1;i<=ACTION_TOTAL;i++){if(localStorage.getItem('action-'+i)==='1')done++;}
+  var el=document.getElementById('action-counter');
+  if(el) el.textContent=done+' of '+ACTION_TOTAL+' complete';
+}
+
+// ── CSV export for lanes table ──────────────────────────────────────────────
+function exportLanesCSV(){
+  var rows=[['Origin','Destination','Mode','Commodity','Spot Rate','30D Change %']];
+  LANES_DATA.forEach(function(l){
+    rows.push([l.o,l.d,l.m,l.note,l.s,(l.c30>0?'+':'')+l.c30+'%']);
+  });
+  var csv=rows.map(function(r){return r.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"';}).join(',');}).join('\n');
+  var a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='hormel-lanes-'+new Date().toISOString().slice(0,10)+'.csv';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+}
+
+function showErr(msg){document.getElementById('aerr-txt').textContent=msg;document.getElementById('aerr').classList.add('on');}
+
+// ── Screener Copilot ────────────────────────────────────────────────────────
+var cpHistory=[]; var cpBusy=false;
+function toggleCopilot(){
+  var p=document.getElementById('copilot-panel');
+  var open=p.classList.toggle('open');
+  document.getElementById('copilot-fab').style.display=open?'none':'flex';
+  if(open) setTimeout(function(){document.getElementById('cp-input').focus();},50);
+}
+function cpKey(e){
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();cpSend();}
+}
+function cpAsk(text){
+  document.getElementById('cp-input').value=text;
+  cpSend();
+}
+function cpAppend(role,text){
+  var body=document.getElementById('cp-body');
+  var div=document.createElement('div');
+  div.className='cp-msg '+(role==='user'?'user':'bot');
+  div.textContent=text;
+  body.appendChild(div);
+  body.scrollTop=body.scrollHeight;
+  return div;
+}
+function cpSend(){
+  if(cpBusy) return;
+  var inp=document.getElementById('cp-input');
+  var text=inp.value.trim();
+  if(!text) return;
+  var starters=document.getElementById('cp-starters');
+  if(starters) starters.remove();
+  inp.value='';
+  cpAppend('user',text);
+  cpHistory.push({role:'user',content:text});
+  cpBusy=true;
+  document.getElementById('cp-send').disabled=true;
+
+  var body=document.getElementById('cp-body');
+  var typing=document.createElement('div');
+  typing.className='cp-typing';typing.textContent='Copilot is thinking…';
+  body.appendChild(typing);body.scrollTop=body.scrollHeight;
+
+  fetch('/api/chat',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({messages:cpHistory.slice(-12)})
+  }).then(function(res){
+    if(!res.ok){
+      return res.json().then(function(j){throw new Error(j.error||'Request failed');});
+    }
+    typing.remove();
+    var botDiv=cpAppend('bot','');
+    var reader=res.body.getReader();
+    var decoder=new TextDecoder();
+    var full='';
+    function pump(){
+      return reader.read().then(function(r){
+        if(r.done){finishBot(botDiv,full);return;}
+        full+=decoder.decode(r.value,{stream:true});
+        botDiv.textContent=full.replace(/\[GOTO:\w+\]/g,'').trim();
+        document.getElementById('cp-body').scrollTop=999999;
+        return pump();
+      });
+    }
+    return pump();
+  }).catch(function(e){
+    if(typing.parentNode) typing.remove();
+    cpAppend('bot','⚠ '+(e.message||'Something went wrong. Please try again.'));
+  }).finally(function(){
+    cpBusy=false;document.getElementById('cp-send').disabled=false;
+    document.getElementById('cp-input').focus();
+  });
+}
+function finishBot(div,full){
+  cpHistory.push({role:'assistant',content:full});
+  var clean=full.replace(/\[GOTO:\w+\]/g,'').trim();
+  div.textContent=clean;
+  // Surface a navigation chip if the copilot suggested a tab
+  var m=full.match(/\[GOTO:(\w+)\]/);
+  if(m && PANE_IDS.indexOf(m[1])>=0){
+    var tabName={overview:'Overview',signals:'Market Signals',network:'My Network',actions:'Action Hub',forecast:'Rate Outlook',sources:'Sources'}[m[1]];
+    var link=document.createElement('a');
+    link.className='cp-goto';link.textContent='→ Open '+(tabName||m[1]);
+    link.onclick=function(){switchTab(m[1]);};
+    div.appendChild(document.createElement('br'));
+    div.appendChild(link);
+  }
+  document.getElementById('cp-body').scrollTop=999999;
+}
+
+// ── Init ────────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded',function(){
+  // Hash-based tab navigation
+  var hash=(location.hash||'#overview').replace('#','');
+  if(PANE_IDS.indexOf(hash)>=0) switchTab(hash);
+
+  // Wire action checklist checkboxes into each action card
+  document.querySelectorAll('#pane-actions > div[style*="background:#fff"]').forEach(function(card,i){
+    card.setAttribute('data-action-id', String(i+1));
+    var flex=card.querySelector('[style*="display:flex"]');
+    if(!flex) return;
+    var cb=document.createElement('input');
+    cb.type='checkbox'; cb.className='action-item-check no-print'; cb.title='Mark as complete';
+    var body=flex.querySelector('[style*="flex:1"]');
+    if(body){body.classList.add('action-body'); flex.insertBefore(cb, flex.firstChild);}
+  });
+  initActionChecklist();
+
+  // Add delta badge spans after each rate value in the mode cards
+  var deltaMap=[
+    {sel:'[data-delta="reefer"]',id:'delta-reefer'},
+    {sel:'[data-delta="dryvan"]',id:'delta-dryvan'},
+    {sel:'[data-delta="ocean"]',id:'delta-ocean'},
+    {sel:'[data-delta="diesel"]',id:'delta-diesel'},
+  ];
+
+  // Load live data
+  loadData(false);
+});
+
+</script>
+</body>
+</html>
