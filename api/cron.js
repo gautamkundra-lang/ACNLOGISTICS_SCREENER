@@ -1,30 +1,33 @@
-// Vercel cron job — runs daily at 17:00 UTC (noon EST / 1pm EDT)
-// Vercel injects CRON_SECRET and passes it as Authorization header automatically.
+// Vercel cron job — runs daily at 17:00 UTC (noon EST / 1pm EDT).
+// Vercel sends Authorization: Bearer ${CRON_SECRET} automatically.
+import { runRefresh } from './refresh.js';
 
-export const config = { maxDuration: 60 };
+export const config = { runtime: 'edge' };
 
 export default async function handler(req) {
-  // Vercel sets this header automatically for cron invocations
   const auth = req.headers.get('authorization') || '';
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  // CRON_SECRET is auto-injected by Vercel for cron invocations. If unset
+  // (e.g. local testing), fall back to REFRESH_SECRET.
+  const expected = process.env.CRON_SECRET || process.env.REFRESH_SECRET;
+  if (expected && auth !== `Bearer ${expected}`) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
-  // Delegate to the refresh endpoint internally (same process, avoids HTTP round-trip)
-  const { default: refreshHandler } = await import('./refresh.js');
-
-  // Build a synthetic POST request with the REFRESH_SECRET so refresh.js auth passes
-  const syntheticReq = new Request('http://localhost/api/refresh', {
-    method: 'POST',
-    headers: {
-      'authorization': `Bearer ${process.env.REFRESH_SECRET}`,
-      'content-type': 'application/json',
-    },
-  });
-
-  const result = await refreshHandler(syntheticReq);
-  const body = await result.json();
-
-  console.log(`[cron] Refresh completed at ${new Date().toISOString()}`, body.status);
-  return Response.json({ status: 'cron_complete', refresh: body.status });
+  try {
+    await runRefresh();
+    console.log(`[cron] refresh complete at ${new Date().toISOString()}`);
+    return new Response(JSON.stringify({ status: 'cron_complete' }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (err) {
+    console.error('[cron] refresh failed:', err);
+    return new Response(JSON.stringify({ status: 'error', message: String(err.message || err) }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
 }

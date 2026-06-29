@@ -1,7 +1,6 @@
-import OpenAI from 'openai';
 import { kv } from '@vercel/kv';
 
-export const config = { maxDuration: 60 };
+export const config = { runtime: 'edge' };
 
 const LIVE_PROMPT = `Search the web for TODAY's current US freight market data (use live sources like DAT Freight, FreightWaves, EIA, Drewry). Find:
 1. DAT Freight trendlines — national average reefer TL spot rate ($/mile)
@@ -29,49 +28,85 @@ Return ONLY valid JSON with no markdown fences:
   "fetched_at": "ISO datetime"
 }`;
 
-export default async function handler(req) {
-  if (req.method !== 'POST') {
-    return Response.json({ error: 'Method Not Allowed' }, { status: 405 });
-  }
-
-  // Verify caller identity
-  const auth = req.headers.get('authorization') || '';
-  const token = auth.replace('Bearer ', '').trim();
-  if (token !== process.env.REFRESH_SECRET) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
-  try {
-    const response = await openai.responses.create({
+// Shared by api/cron.js so the daily job reuses the exact same logic.
+export async function runRefresh() {
+  const res = await fetch('https://api.openai.com/v1/responses', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+    },
+    body: JSON.stringify({
       model: 'gpt-4o',
       tools: [{ type: 'web_search_preview' }],
       input: LIVE_PROMPT,
-    });
+    }),
+  });
 
-    // Extract the text output
-    const rawText = response.output
+  if (!res.ok) {
+    const errText = await res.text().catch(() => '');
+    throw new Error(`OpenAI ${res.status}: ${errText.slice(0, 300)}`);
+  }
+
+  const payload = await res.json();
+
+  // The Responses API returns an `output` array; pull the assistant text out.
+  let rawText = '';
+  if (typeof payload.output_text === 'string') {
+    rawText = payload.output_text;
+  } else if (Array.isArray(payload.output)) {
+    rawText = payload.output
       .filter((b) => b.type === 'message')
-      .flatMap((b) => b.content)
+      .flatMap((b) => b.content || [])
       .filter((c) => c.type === 'output_text')
       .map((c) => c.text)
       .join('');
+  }
 
-    // Parse JSON — strip any accidental markdown fences
-    const jsonStr = rawText.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
-    const data = JSON.parse(jsonStr);
-    data.fetched_at = data.fetched_at || new Date().toISOString();
+  // Strip any accidental markdown fences, then isolate the JSON object.
+  let jsonStr = rawText.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+  const match = jsonStr.match(/\{[\s\S]*\}/);
+  if (match) jsonStr = match[0];
 
-    // Archive previous before overwriting
-    const prev = await kv.get('hormel:latest');
-    if (prev) await kv.set('hormel:previous', prev);
+  const data = JSON.parse(jsonStr);
+  data.fetched_at = data.fetched_at || new Date().toISOString();
 
-    await kv.set('hormel:latest', data);
+  // Archive the previous snapshot for day-over-day deltas, then store latest.
+  const prev = await kv.get('hormel:latest');
+  if (prev) await kv.set('hormel:previous', prev);
+  await kv.set('hormel:latest', data);
 
-    return Response.json({ status: 'ok', data });
+  return data;
+}
+
+export default async function handler(req) {
+  if (req.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'Method Not Allowed' }), {
+      status: 405,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  const auth = req.headers.get('authorization') || '';
+  const token = auth.replace('Bearer ', '').trim();
+  if (token !== process.env.REFRESH_SECRET) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  try {
+    const data = await runRefresh();
+    return new Response(JSON.stringify({ status: 'ok', data }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
   } catch (err) {
     console.error('api/refresh error:', err);
-    return Response.json({ status: 'error', message: err.message }, { status: 500 });
+    return new Response(JSON.stringify({ status: 'error', message: String(err.message || err) }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 }
