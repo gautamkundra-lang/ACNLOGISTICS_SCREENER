@@ -985,19 +985,30 @@ function riskNorm(txt){
   if(txt.indexOf('STABLE')>=0)return 'STABLE';
   return '';
 }
+// Read risk from the dedicated badge element (a span/cell whose exact text is a
+// risk token) — NOT the whole card text, which can contain words like
+// "shelf-stable" and cause false matches.
+function badgeRisk(el){
+  var found='';
+  el.querySelectorAll('span').forEach(function(s){
+    var t=(s.textContent||'').trim().toUpperCase();
+    if(t==='HIGH'||t==='WATCH'||t==='EASING'||t==='STABLE') found=t;
+  });
+  return riskNorm(found);
+}
 function tagFilterables(){
   document.querySelectorAll('#pane-overview .modes-grid > div').forEach(function(card){
     var t=card.querySelector('p');
     card.dataset.fmode=codeFromText(t?t.textContent:'');
-    card.dataset.frisk=riskNorm((card.textContent.match(/HIGH|WATCH|EASING|STABLE/i)||[''])[0]);
+    card.dataset.frisk=badgeRisk(card);
   });
   document.querySelectorAll('#pane-actions > div[data-action-id]').forEach(function(card){
     var chip=card.querySelector('span[style*="EEF0E6"]');
     card.dataset.fmode=codeFromText(chip?chip.textContent:'');
   });
   document.querySelectorAll('#lanes-tbl .lane-row').forEach(function(row){
-    if(!row.dataset.fmode) row.dataset.fmode=codeFromText(row.getAttribute('data-m')||row.textContent);
-    if(!row.dataset.frisk) row.dataset.frisk=riskNorm((row.textContent.match(/HIGH|WATCH|EASING|STABLE/i)||[''])[0]);
+    if(!row.dataset.fmode) row.dataset.fmode=codeFromText(row.getAttribute('data-m')||'');
+    if(!row.dataset.frisk) row.dataset.frisk=badgeRisk(row);
   });
 }
 function activeFilterLabel(){
