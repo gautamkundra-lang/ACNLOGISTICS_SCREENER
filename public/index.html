@@ -173,7 +173,7 @@ a{color:inherit;text-decoration:none}
   </div>
 </div>
 <div class="tabs">
-<button class="tbtn ag" data-tab="overview" onclick="switchTab('overview')">Overview</button><button class="tbtn" data-tab="signals" onclick="switchTab('signals')">Market Signals</button><button class="tbtn" data-tab="network" onclick="switchTab('network')">My Network</button><button class="tbtn" data-tab="actions" onclick="switchTab('actions')">Action Hub <span id="actions-badge" style="display:none;background:#C83020;color:#fff;border-radius:9px;padding:1px 6px;font-size:9px;font-weight:700;margin-left:3px"></span></button><button class="tbtn" data-tab="forecast" onclick="switchTab('forecast')">Rate Outlook</button><button class="tbtn" data-tab="sources" onclick="switchTab('sources')">Sources</button><button class="tbtn" data-tab="howto" onclick="switchTab('howto')">&#9432; How to Use</button>
+<button class="tbtn ag" data-tab="overview" onclick="switchTab('overview')">Overview</button><button class="tbtn" data-tab="signals" onclick="switchTab('signals')">Market Signals</button><button class="tbtn" data-tab="network" onclick="switchTab('network')">My Network</button><button class="tbtn" data-tab="actions" onclick="switchTab('actions')">Action Hub <span id="actions-badge" style="display:none;background:#C83020;color:#fff;border-radius:9px;padding:1px 6px;font-size:9px;font-weight:700;margin-left:3px"></span></button><button class="tbtn" data-tab="forecast" onclick="switchTab('forecast')">Rate Outlook</button><button class="tbtn" data-tab="accuracy" onclick="switchTab('accuracy')">Accuracy</button><button class="tbtn" data-tab="sources" onclick="switchTab('sources')">Sources</button><button class="tbtn" data-tab="howto" onclick="switchTab('howto')">&#9432; How to Use</button>
   <div class="tsep"></div>
   <span style="font-size:10px;font-weight:700;color:#7A8575;text-transform:uppercase;letter-spacing:.1em;flex-shrink:0;padding-right:2px">MODE</span>
   <button class="tbtn ag" id="tm-ALL" onclick="setModeF('ALL')">All</button>
@@ -817,6 +817,18 @@ a{color:inherit;text-decoration:none}
 </div>
 <div id="fc-chart-area" style="background:#fff;border:1px solid rgba(40,58,30,.15);border-radius:4px;padding:14px 16px;min-height:280px"></div>
 </div>
+<div id="pane-accuracy" class="tp" style="display:none">
+<div class="intel-card" style="border-left-color:#7B5EA7">
+  <div class="intel-lbl" style="color:#7B5EA7">Forecast accuracy &amp; feedback loop</div>
+  <div class="intel-text">Every refresh scores the previous day's base-case call against what the rate actually did, and the resulting hit-rate is <strong>fed back into the next forecast prompt</strong> so the engine self-corrects where it has been wrong. Below is the running track record and the predicted-vs-actual log per mode. Directional accuracy = did the rate move the way the base case pointed. The record strengthens as daily history accumulates.</div>
+</div>
+<div id="accuracy-scorecards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-bottom:18px"></div>
+<div id="accuracy-detail"></div>
+<div id="accuracy-calib" style="background:#F4F5EE;border:1px solid rgba(40,58,30,.12);border-left:3px solid #7B5EA7;border-radius:4px;padding:12px 16px;margin-top:8px;display:none">
+  <p style="font-size:10px;font-weight:700;color:#7B5EA7;text-transform:uppercase;letter-spacing:.1em;margin:0 0 6px">Calibration currently fed back to the model</p>
+  <p id="accuracy-calib-txt" style="font-size:12px;color:#4A5548;line-height:1.6;margin:0"></p>
+</div>
+</div>
 <div id="pane-sources" class="tp" style="display:none">
 
 <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:16px">
@@ -969,7 +981,7 @@ var LANES_DATA=[{"id": 1, "hist": [3.52, 3.55, 3.58, 3.62, 3.65, 3.67, 3.71, 3.7
 var MODES_FC=[{"id": "reefer", "n": "Reefer TL", "rn": 3.47, "rate": "$3.47/mi", "fc30": 3.65, "fcbull": 3.52, "fcbear": 3.92, "hist": [3.1, 3.14, 3.18, 3.22, 3.26, 3.28, 3.31, 3.35, 3.39, 3.42, 3.45, 3.47], "src": "DAT Reefer", "dir": "HEADWIND", "ctx": "Organic Deli + Refrigerated Foods"}, {"id": "dryvan", "n": "Dry Van TL", "rn": 2.84, "rate": "$2.84/mi", "fc30": 2.98, "fcbull": 2.82, "fcbear": 3.14, "hist": [2.62, 2.64, 2.67, 2.7, 2.72, 2.71, 2.74, 2.77, 2.8, 2.81, 2.83, 2.84], "src": "DAT Dry Van", "dir": "HEADWIND", "ctx": "Canned Meat, Canned Goods, Shelf-Stable"}, {"id": "ltl", "n": "LTL", "rn": 98.4, "rate": "$98.4/cwt", "fc30": 97.2, "fcbull": 95.8, "fcbear": 99.6, "hist": [99.8, 100.1, 99.9, 99.6, 99.3, 99.1, 98.9, 98.9, 98.7, 98.5, 98.5, 98.4], "src": "Cass Index", "dir": "TAILWIND", "ctx": "Secondary & DSD Distribution"}, {"id": "imdl", "n": "Intermodal", "rn": 2.18, "rate": "$2.18/mi", "fc30": 2.28, "fcbull": 2.12, "fcbear": 2.38, "hist": [2.08, 2.1, 2.11, 2.12, 2.13, 2.12, 2.14, 2.15, 2.16, 2.17, 2.17, 2.18], "src": "DrayNow / IANA", "dir": "HEADWIND", "ctx": "Import Drayage \u2014 LA/LB to Midwest"}, {"id": "ocean", "n": "Ocean FCL", "rn": 3240, "rate": "$3,240/FEU", "fc30": 3420, "fcbull": 3180, "fcbear": 3820, "hist": [3780, 3650, 3560, 3490, 3420, 3375, 3340, 3310, 3285, 3265, 3248, 3240], "src": "Drewry WCI", "dir": "TAILWIND", "ctx": "Canned Meat Ingredients \u2014 Buy Window Open"}, {"id": "air", "n": "Air Freight", "rn": 4.82, "rate": "$4.82/kg", "fc30": 5.08, "fcbull": 4.82, "fcbear": 5.42, "hist": [4.6, 4.62, 4.64, 4.65, 4.67, 4.69, 4.71, 4.73, 4.76, 4.79, 4.81, 4.82], "src": "Freightos FAX", "dir": "HEADWIND", "ctx": "Emergency Ingredient Shortfalls"}, {"id": "rail", "n": "Rail Carload", "rn": 1.92, "rate": "$1.92/mi", "fc30": 1.94, "fcbull": 1.9, "fcbear": 1.98, "hist": [1.9, 1.91, 1.91, 1.91, 1.92, 1.91, 1.91, 1.92, 1.92, 1.92, 1.92, 1.92], "src": "AAR Weekly", "dir": "NEUTRAL", "ctx": "Grain & Bulk Ingredient Movements"}, {"id": "parcel", "n": "Parcel / DTC", "rn": 8.94, "rate": "$8.94/pkg", "fc30": 8.88, "fcbull": 8.72, "fcbear": 9.08, "hist": [9.02, 9.01, 9.01, 9.0, 8.99, 8.98, 8.97, 8.96, 8.95, 8.95, 8.94, 8.94], "src": "ShipMatrix", "dir": "TAILWIND", "ctx": "the DTC e-commerce site + Corporate Gifting"}];
 
 var selLane=null, modeF='ALL', riskF='ALL', dirF='ALL';
-var PANE_IDS = ['overview','signals','network','actions','forecast','sources','howto'];
+var PANE_IDS = ['overview','signals','network','actions','forecast','accuracy','sources','howto'];
 
 function switchTab(id) {
   PANE_IDS.forEach(function(pid) {
@@ -981,6 +993,7 @@ function switchTab(id) {
     if (b.getAttribute('data-tab')===id) b.className += ' ag';
   });
   if (id==='forecast') setTimeout(function(){ renderFcChart(currentFcMode); }, 50);
+  if (id==='accuracy') renderAccuracy();
   history.replaceState(null,'','#'+id);
   // Re-apply active MODE/RISK filters so the newly shown tab reflects them
   if (typeof applyAllFilters==='function') applyAllFilters();
@@ -1214,6 +1227,45 @@ function accuracyBadge(id){
   var col=pct>=70?{bg:'#E0EDCC',fg:'#2E4A20'}:pct>=50?{bg:'#FEF0E5',fg:'#B85A18'}:{bg:'#FDE8E5',fg:'#A02010'};
   return '<span title="Directional hit-rate of past base-case calls" style="font-size:9px;font-weight:700;padding:2px 8px;border-radius:3px;background:'+col.bg+';color:'+col.fg+'">Track record: '+pct+'% ('+a.total+' calls)</span>';
 }
+var ACC_MODES=[{id:'reefer',n:'Reefer TL',pfx:'$'},{id:'dryvan',n:'Dry Van TL',pfx:'$'},{id:'ocean',n:'Ocean SH-LA',pfx:'$'},{id:'ltl',n:'LTL',pfx:'$'}];
+function fmtRate(v,pfx){ if(v==null)return '—'; return (pfx||'')+(v>100?Math.round(v):(+v).toFixed(2)); }
+function renderAccuracy(){
+  var acc=FC_ACCURACY||{};
+  var sc=document.getElementById('accuracy-scorecards'), det=document.getElementById('accuracy-detail');
+  if(!sc||!det) return;
+  function card(title,big,sub,fg,bg){
+    return '<div style="background:'+bg+';border-radius:4px;padding:12px 14px"><p style="font-size:10px;font-weight:700;color:'+fg+';text-transform:uppercase;letter-spacing:.06em;margin:0 0 4px">'+escHtml(title)+'</p><p style="font-size:26px;font-weight:700;font-family:monospace;color:'+fg+';margin:0">'+big+'</p><p style="font-size:10px;color:'+fg+';margin:2px 0 0">'+escHtml(sub)+'</p></div>';
+  }
+  sc.innerHTML=ACC_MODES.map(function(m){
+    var a=acc[m.id];
+    if(!a||!a.total) return card(m.n,'—','No calls yet','#5A6355','#EEF0E6');
+    var pct=Math.round(a.hits/a.total*100);
+    var c=pct>=70?{fg:'#2E4A20',bg:'#E0EDCC'}:pct>=50?{fg:'#B85A18',bg:'#FEF0E5'}:{fg:'#A02010',bg:'#FDE8E5'};
+    return card(m.n,pct+'%',a.hits+' / '+a.total+' calls correct',c.fg,c.bg);
+  }).join('');
+  det.innerHTML=ACC_MODES.map(function(m){
+    var a=acc[m.id]; if(!a||!a.log||!a.log.length) return '';
+    var rows=a.log.slice().reverse().slice(0,10).map(function(r){
+      var predDir=r.pred>r.from?'&#9650;':(r.pred<r.from?'&#9660;':'&mdash;');
+      var actDir=r.actual>r.from?'&#9650;':(r.actual<r.from?'&#9660;':'&mdash;');
+      var mark=r.hit?'<span style="color:#2E4A20;font-weight:700">&#10003;</span>':'<span style="color:#A02010;font-weight:700">&#10007;</span>';
+      return '<tr style="border-top:1px solid rgba(40,58,30,.08)">'
+        +'<td style="padding:5px 8px;color:#7A8575">'+escHtml((r.date||'').slice(0,10))+'</td>'
+        +'<td style="padding:5px 8px;font-family:monospace">'+fmtRate(r.from,m.pfx)+'</td>'
+        +'<td style="padding:5px 8px;font-family:monospace">'+predDir+' '+fmtRate(r.pred,m.pfx)+'</td>'
+        +'<td style="padding:5px 8px;font-family:monospace">'+actDir+' '+fmtRate(r.actual,m.pfx)+'</td>'
+        +'<td style="padding:5px 8px;text-align:center">'+mark+'</td></tr>';
+    }).join('');
+    return '<div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-radius:4px;padding:12px 14px;margin-bottom:12px">'
+      +'<p style="font-size:11px;font-weight:700;color:#1A2816;margin:0 0 8px">'+escHtml(m.n)+' &mdash; predicted vs reality</p>'
+      +'<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr style="color:#7A8575;text-align:left">'
+      +'<th style="padding:0 8px 4px;font-weight:600">As of</th><th style="padding:0 8px 4px;font-weight:600">Rate then</th><th style="padding:0 8px 4px;font-weight:600">Predicted (30d base)</th><th style="padding:0 8px 4px;font-weight:600">Actual next</th><th style="padding:0 8px 4px;font-weight:600;text-align:center">Hit</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
+  }).join('') || '<p style="font-size:12px;color:#7A8575;text-align:center;padding:24px">No predicted-vs-actual history yet. Records build up as the daily refresh runs across multiple days.</p>';
+  var parts=[];
+  ACC_MODES.forEach(function(m){ var a=acc[m.id]; if(a&&a.total>=3) parts.push(m.id+' '+Math.round(a.hits/a.total*100)+'%'); });
+  var cw=document.getElementById('accuracy-calib'), ct=document.getElementById('accuracy-calib-txt');
+  if(cw&&ct){ if(parts.length){ ct.textContent='Recent directional hit-rate by mode: '+parts.join('; ')+'. Low hit-rate modes are instructed to reconsider direction and widen the bull/bear band on the next forecast.'; cw.style.display='block'; } else cw.style.display='none'; }
+}
 var DRIVER_CATS=[
   {key:'demand',label:'Demand'},
   {key:'capacity',label:'Capacity / Supply'},
@@ -1359,6 +1411,7 @@ function loadData(manual) {
       }
       // Lanes come from the TMS / data-lake feed and render independently of the market refresh
       if(resp.lanes && resp.lanes.lanes && resp.lanes.lanes.length) renderLanesTable(resp.lanes);
+      renderAccuracy();
     })
     .catch(function(){
       if(manual) showErr('Could not load data. Try again shortly.');

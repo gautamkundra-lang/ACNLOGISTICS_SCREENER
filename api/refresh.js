@@ -138,9 +138,20 @@ function updateAccuracy(acc, prevData, data) {
     const predDir = Math.sign(prevPred - prevRate);
     const actDir = Math.sign(nowRate - prevRate);
     const flat = Math.abs(nowRate - prevRate) / prevRate < 0.003;
-    const a = acc[t.id] || { hits: 0, total: 0 };
+    const a = acc[t.id] || { hits: 0, total: 0, log: [] };
     a.total += 1;
-    if (flat || predDir === actDir) a.hits += 1;
+    const hit = flat || predDir === actDir;
+    if (hit) a.hits += 1;
+    // Keep a rolling predicted-vs-actual log for the Accuracy view.
+    a.log = a.log || [];
+    a.log.push({
+      date: data.fetched_at,
+      from: prevRate,          // rate when the prediction was made
+      pred: prevPred,          // predicted 30-day base case
+      actual: nowRate,         // what the rate actually became at this refresh
+      hit,
+    });
+    if (a.log.length > 30) a.log = a.log.slice(-30);
     acc[t.id] = a;
   });
 }
