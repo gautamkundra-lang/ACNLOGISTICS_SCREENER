@@ -116,6 +116,7 @@ a{color:inherit;text-decoration:none}
   .modes-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
   .sigs-grid{grid-template-columns:1fr 1fr}
   .lane-det{display:none!important}
+  #pane-howto{display:none!important}
 }
 
 /* ── Screener Copilot chat widget ── */
@@ -171,7 +172,7 @@ a{color:inherit;text-decoration:none}
   </div>
 </div>
 <div class="tabs">
-<button class="tbtn ag" data-tab="overview" onclick="switchTab('overview')">Overview</button><button class="tbtn" data-tab="signals" onclick="switchTab('signals')">Market Signals</button><button class="tbtn" data-tab="network" onclick="switchTab('network')">My Network</button><button class="tbtn" data-tab="actions" onclick="switchTab('actions')">Action Hub <span id="actions-badge" style="display:none;background:#C83020;color:#fff;border-radius:9px;padding:1px 6px;font-size:9px;font-weight:700;margin-left:3px"></span></button><button class="tbtn" data-tab="forecast" onclick="switchTab('forecast')">Rate Outlook</button><button class="tbtn" data-tab="sources" onclick="switchTab('sources')">Sources</button>
+<button class="tbtn ag" data-tab="overview" onclick="switchTab('overview')">Overview</button><button class="tbtn" data-tab="signals" onclick="switchTab('signals')">Market Signals</button><button class="tbtn" data-tab="network" onclick="switchTab('network')">My Network</button><button class="tbtn" data-tab="actions" onclick="switchTab('actions')">Action Hub <span id="actions-badge" style="display:none;background:#C83020;color:#fff;border-radius:9px;padding:1px 6px;font-size:9px;font-weight:700;margin-left:3px"></span></button><button class="tbtn" data-tab="forecast" onclick="switchTab('forecast')">Rate Outlook</button><button class="tbtn" data-tab="sources" onclick="switchTab('sources')">Sources</button><button class="tbtn" data-tab="howto" onclick="switchTab('howto')">&#9432; How to Use</button>
   <div class="tsep"></div>
   <span style="font-size:10px;font-weight:700;color:#7A8575;text-transform:uppercase;letter-spacing:.1em;flex-shrink:0;padding-right:2px">MODE</span>
   <button class="tbtn ag" id="tm-ALL" onclick="setModeF('ALL')">All</button>
@@ -802,6 +803,76 @@ a{color:inherit;text-decoration:none}
 <div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-radius:4px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px"><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><a href="https://www.ups.com/us/en/supplychain/tools/surcharges" target="_blank" style="font-size:13px;font-weight:700;color:#1A5CA5;text-decoration:underline">UPS / FedEx Surcharge Tables</a><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.07em;background:#EEF0E6;color:#5A6355">REF</span></div><p style="font-size:11px;color:#4A5548;margin:0 0 6px;line-height:1.5">Monthly published fuel and delivery area surcharge tables. Key reference for Hormel.com DTC parcel and corporate gifting program cost modeling.</p><div style="display:flex;gap:4px;flex-wrap:wrap"><span style="font-size:9px;padding:2px 6px;background:#EEF0E6;color:#5A6355;border-radius:3px">Parcel FSC</span> <span style="font-size:9px;padding:2px 6px;background:#EEF0E6;color:#5A6355;border-radius:3px">Residential DAS</span></div></div><a href="https://www.ups.com/us/en/supplychain/tools/surcharges" target="_blank" style="font-size:10px;padding:4px 10px;border-radius:3px;background:#EEF0E6;color:#4A5548;flex-shrink:0;white-space:nowrap;border:1px solid rgba(40,58,30,.15)">Open &#8599;</a></div>
 </div>
 </div>
+<div id="pane-howto" class="tp" style="display:none">
+
+<div class="intel-card" style="border-left-color:#3B5E28">
+  <div class="intel-lbl">What this tool is</div>
+  <div class="intel-text">A daily freight-market early-warning and decision-support screener for the Hormel transportation &amp; procurement team. It pulls current rates across 8 modes, scores them as headwinds or tailwinds against your network, flags escalation conditions, and turns all of it into prioritized, dollar-sized actions. Data refreshes automatically every day at <strong>noon EST</strong>. Think of it as the first thing you open with your morning coffee and the backbone of your weekly capacity-planning meeting.</div>
+</div>
+
+<p class="sec-hdr">Your daily routine &nbsp;(&#8776; 5 minutes)</p>
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:22px">
+  <div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-top:3px solid #3B5E28;border-radius:4px;padding:13px 15px">
+    <p style="font-size:11px;font-weight:700;color:#3B5E28;margin:0 0 4px">1 &middot; Scan the banner &amp; ticker</p>
+    <p style="font-size:12px;color:#4A5548;margin:0;line-height:1.55">If the red <strong>escalation banner</strong> is showing at the top, a threshold has been breached — start there. Otherwise glance at the scrolling ticker for any overnight rate moves.</p>
+  </div>
+  <div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-top:3px solid #3B5E28;border-radius:4px;padding:13px 15px">
+    <p style="font-size:11px;font-weight:700;color:#3B5E28;margin:0 0 4px">2 &middot; Read the Overview</p>
+    <p style="font-size:12px;color:#4A5548;margin:0;line-height:1.55">Check the <strong>HTCI</strong> trend and the Intelligence Summary. Note which modes are headwinds (red) vs tailwinds (green). This is your 30-second market read.</p>
+  </div>
+  <div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-top:3px solid #3B5E28;border-radius:4px;padding:13px 15px">
+    <p style="font-size:11px;font-weight:700;color:#3B5E28;margin:0 0 4px">3 &middot; Check Action Hub</p>
+    <p style="font-size:12px;color:#4A5548;margin:0;line-height:1.55">Look at anything marked <strong>CRITICAL</strong> or <strong>HIGH</strong>. Tick off what you've done; the counter tracks your progress so nothing slips.</p>
+  </div>
+  <div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-top:3px solid #3B5E28;border-radius:4px;padding:13px 15px">
+    <p style="font-size:11px;font-weight:700;color:#3B5E28;margin:0 0 4px">4 &middot; Ask the Copilot</p>
+    <p style="font-size:12px;color:#4A5548;margin:0;line-height:1.55">Unsure what a move means for your lanes? Open the <strong>Screener Copilot</strong> (bottom-right) and ask &mdash; e.g. "what changed since yesterday and what should I do?"</p>
+  </div>
+</div>
+
+<p class="sec-hdr">Your weekly routine &nbsp;(planning &amp; negotiation)</p>
+<div class="factors-box" style="margin-bottom:22px">
+  <div style="padding:13px 16px;border-bottom:1px solid rgba(40,58,30,.1)">
+    <p style="font-size:12px;font-weight:700;color:#1A2816;margin:0 0 3px">&#9654;&ensp;Review My Network lane-by-lane</p>
+    <p style="font-size:12px;color:#4A5548;margin:0;line-height:1.55">Open <strong>My Network</strong>, expand each critical lane to see its 12-week trend. Decide which lanes to <em>lock</em>, <em>monitor</em>, or play on the <em>spot</em> market. Export the table to CSV to share with carriers or bring into your RFP.</p>
+  </div>
+  <div style="padding:13px 16px;border-bottom:1px solid rgba(40,58,30,.1)">
+    <p style="font-size:12px;font-weight:700;color:#1A2816;margin:0 0 3px">&#9654;&ensp;Pressure-test the Rate Outlook</p>
+    <p style="font-size:12px;color:#4A5548;margin:0;line-height:1.55">Use <strong>Rate Outlook</strong> bull/base/bear scenarios to set budget assumptions and contract-negotiation targets. Lock contracts when the bear case is steep; ride spot when the bull case dominates.</p>
+  </div>
+  <div style="padding:13px 16px;border-bottom:1px solid rgba(40,58,30,.1)">
+    <p style="font-size:12px;font-weight:700;color:#1A2816;margin:0 0 3px">&#9654;&ensp;Work the Action Hub by priority &amp; deadline</p>
+    <p style="font-size:12px;color:#4A5548;margin:0;line-height:1.55">Each action carries a <em>why now</em>, a <em>how</em>, a dollar impact, and a deadline. Use these to drive your weekly transportation/procurement stand-up and assign owners.</p>
+  </div>
+  <div style="padding:13px 16px">
+    <p style="font-size:12px;font-weight:700;color:#1A2816;margin:0 0 3px">&#9654;&ensp;Confirm escalation triggers &amp; owners</p>
+    <p style="font-size:12px;color:#4A5548;margin:0;line-height:1.55">Re-read the <strong>Escalation Triggers</strong> table. Make sure each owner (Transportation, Procurement, Planning, Customer Service) knows their threshold and the pre-agreed response before a trigger fires.</p>
+  </div>
+</div>
+
+<p class="sec-hdr">What each tab is for</p>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:22px">
+  <div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-radius:4px;padding:12px 15px"><p style="font-size:12px;font-weight:700;color:#1A2816;margin:0 0 3px">Overview</p><p style="font-size:12px;color:#4A5548;margin:0;line-height:1.5">The market at a glance — cost index, all 8 modes, and the KPIs that matter to Hormel. <em>Start here daily.</em></p></div>
+  <div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-radius:4px;padding:12px 15px"><p style="font-size:12px;font-weight:700;color:#1A2816;margin:0 0 3px">Market Signals</p><p style="font-size:12px;color:#4A5548;margin:0;line-height:1.5">The <em>why</em> behind the moves — capacity crunches, weather, canal constraints. Filter by mode or risk level.</p></div>
+  <div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-radius:4px;padding:12px 15px"><p style="font-size:12px;font-weight:700;color:#1A2816;margin:0 0 3px">My Network</p><p style="font-size:12px;color:#4A5548;margin:0;line-height:1.5">Your specific lanes, rates, OTIF and recommended posture. <em>Your weekly planning home base.</em></p></div>
+  <div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-radius:4px;padding:12px 15px"><p style="font-size:12px;font-weight:700;color:#1A2816;margin:0 0 3px">Action Hub</p><p style="font-size:12px;color:#4A5548;margin:0;line-height:1.5">Prioritized recommendations with dollar impact, plus escalation triggers. <em>Where market reads become decisions.</em></p></div>
+  <div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-radius:4px;padding:12px 15px"><p style="font-size:12px;font-weight:700;color:#1A2816;margin:0 0 3px">Rate Outlook</p><p style="font-size:12px;color:#4A5548;margin:0;line-height:1.5">12-week trend + 30-day bull/base/bear forecast per mode. <em>For budgeting and negotiation targets.</em></p></div>
+  <div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-radius:4px;padding:12px 15px"><p style="font-size:12px;font-weight:700;color:#1A2816;margin:0 0 3px">Sources</p><p style="font-size:12px;color:#4A5548;margin:0;line-height:1.5">Every data source behind the numbers, with links. <em>For validation and deeper dives.</em></p></div>
+</div>
+
+<p class="sec-hdr">How to read the signals</p>
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:22px">
+  <div style="background:#FDE8E5;border-radius:4px;padding:12px 15px"><p style="font-size:12px;font-weight:700;color:#A02010;margin:0 0 3px">&#9650; Headwind (red)</p><p style="font-size:12px;color:#A02010;margin:0;line-height:1.5">Rates rising against you. Consider locking capacity/contracts before they climb further.</p></div>
+  <div style="background:#E0EDCC;border-radius:4px;padding:12px 15px"><p style="font-size:12px;font-weight:700;color:#2E4A20;margin:0 0 3px">&#9660; Tailwind (green)</p><p style="font-size:12px;color:#2E4A20;margin:0;line-height:1.5">Rates falling in your favor. A buying window — pre-book or renegotiate while it's soft.</p></div>
+  <div style="background:#FEF0E5;border-radius:4px;padding:12px 15px"><p style="font-size:12px;font-weight:700;color:#B85A18;margin:0 0 3px">HIGH / WATCH / EASING</p><p style="font-size:12px;color:#B85A18;margin:0;line-height:1.5">Risk level. <strong>HIGH</strong> = act now, <strong>WATCH</strong> = monitor closely, <strong>EASING</strong> = pressure releasing.</p></div>
+</div>
+
+<div class="intel-card" style="border-left-color:#7B5EA7;margin-bottom:8px">
+  <div class="intel-lbl" style="color:#7B5EA7">Getting the most from the Screener Copilot</div>
+  <div class="intel-text">The Copilot knows the live data and the whole dashboard. Ask it open questions and it will point you to the right tab. Try: <em>"Summarize today in 3 bullets,"</em> &nbsp;<em>"Which lanes are most exposed to the reefer crunch?"</em>, &nbsp;<em>"What should I bring to my carrier negotiation this week?"</em>, or &nbsp;<em>"Walk me through the most urgent action and why."</em> It's grounded in dashboard data, but always validate a number against the Sources tab before you commit budget or sign a contract.</div>
+</div>
+<p style="font-size:11px;color:#7A8575;margin:0 0 8px;line-height:1.6">&#128338; Data refreshes automatically every day at noon EST. The header shows the last-updated time and the next refresh. You can force an immediate refresh with <strong>REFRESH NOW</strong>, and export a clean PDF for meetings with the print button.</p>
+</div>
 <div class="ftr"><p>&copy; Hormel Foods Corporation &nbsp;&middot;&nbsp; Transportation Cost Intelligence &nbsp;&middot;&nbsp; CPG Freight Market Signals &nbsp;&middot;&nbsp; Daily data refresh at noon EST via OpenAI</p></div>
 
 <!-- ── Screener Copilot ── -->
@@ -836,7 +907,7 @@ var LANES_DATA=[{"id": 1, "hist": [3.52, 3.55, 3.58, 3.62, 3.65, 3.67, 3.71, 3.7
 var MODES_FC=[{"id": "reefer", "n": "Reefer TL", "rn": 3.47, "rate": "$3.47/mi", "fc30": 3.65, "fcbull": 3.52, "fcbear": 3.92, "hist": [3.1, 3.14, 3.18, 3.22, 3.26, 3.28, 3.31, 3.35, 3.39, 3.42, 3.45, 3.47], "src": "DAT Reefer", "dir": "HEADWIND", "ctx": "Applegate + Hormel Refrigerated"}, {"id": "dryvan", "n": "Dry Van TL", "rn": 2.84, "rate": "$2.84/mi", "fc30": 2.98, "fcbull": 2.82, "fcbear": 3.14, "hist": [2.62, 2.64, 2.67, 2.7, 2.72, 2.71, 2.74, 2.77, 2.8, 2.81, 2.83, 2.84], "src": "DAT Dry Van", "dir": "HEADWIND", "ctx": "SPAM, Canned Goods, Shelf-Stable"}, {"id": "ltl", "n": "LTL", "rn": 98.4, "rate": "$98.4/cwt", "fc30": 97.2, "fcbull": 95.8, "fcbear": 99.6, "hist": [99.8, 100.1, 99.9, 99.6, 99.3, 99.1, 98.9, 98.9, 98.7, 98.5, 98.5, 98.4], "src": "Cass Index", "dir": "TAILWIND", "ctx": "Secondary & DSD Distribution"}, {"id": "imdl", "n": "Intermodal", "rn": 2.18, "rate": "$2.18/mi", "fc30": 2.28, "fcbull": 2.12, "fcbear": 2.38, "hist": [2.08, 2.1, 2.11, 2.12, 2.13, 2.12, 2.14, 2.15, 2.16, 2.17, 2.17, 2.18], "src": "DrayNow / IANA", "dir": "HEADWIND", "ctx": "Import Drayage \u2014 LA/LB to Midwest"}, {"id": "ocean", "n": "Ocean FCL", "rn": 3240, "rate": "$3,240/FEU", "fc30": 3420, "fcbull": 3180, "fcbear": 3820, "hist": [3780, 3650, 3560, 3490, 3420, 3375, 3340, 3310, 3285, 3265, 3248, 3240], "src": "Drewry WCI", "dir": "TAILWIND", "ctx": "SPAM Ingredients \u2014 Buy Window Open"}, {"id": "air", "n": "Air Freight", "rn": 4.82, "rate": "$4.82/kg", "fc30": 5.08, "fcbull": 4.82, "fcbear": 5.42, "hist": [4.6, 4.62, 4.64, 4.65, 4.67, 4.69, 4.71, 4.73, 4.76, 4.79, 4.81, 4.82], "src": "Freightos FAX", "dir": "HEADWIND", "ctx": "Emergency Ingredient Shortfalls"}, {"id": "rail", "n": "Rail Carload", "rn": 1.92, "rate": "$1.92/mi", "fc30": 1.94, "fcbull": 1.9, "fcbear": 1.98, "hist": [1.9, 1.91, 1.91, 1.91, 1.92, 1.91, 1.91, 1.92, 1.92, 1.92, 1.92, 1.92], "src": "AAR Weekly", "dir": "NEUTRAL", "ctx": "Grain & Bulk Ingredient Movements"}, {"id": "parcel", "n": "Parcel / DTC", "rn": 8.94, "rate": "$8.94/pkg", "fc30": 8.88, "fcbull": 8.72, "fcbear": 9.08, "hist": [9.02, 9.01, 9.01, 9.0, 8.99, 8.98, 8.97, 8.96, 8.95, 8.95, 8.94, 8.94], "src": "ShipMatrix", "dir": "TAILWIND", "ctx": "Hormel.com + Corporate Gifting"}];
 
 var selLane=null, modeF='ALL', riskF='ALL', dirF='ALL';
-var PANE_IDS = ['overview','signals','network','actions','forecast','sources'];
+var PANE_IDS = ['overview','signals','network','actions','forecast','sources','howto'];
 
 function switchTab(id) {
   PANE_IDS.forEach(function(pid) {
