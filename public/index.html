@@ -960,6 +960,81 @@ function switchTab(id) {
   });
   if (id==='forecast') setTimeout(function(){ renderFcChart(currentFcMode); }, 50);
   history.replaceState(null,'','#'+id);
+  // Re-apply active MODE/RISK filters so the newly shown tab reflects them
+  if (typeof applyAllFilters==='function') applyAllFilters();
+}
+
+// ── Global cross-tab filtering (MODE + RISK apply to every tab) ───────────────
+function codeFromText(txt){
+  txt=(txt||'').toLowerCase();
+  if(txt.indexOf('reefer')>=0)return 'REEFER';
+  if(txt.indexOf('dry van')>=0)return 'DRYVAN';
+  if(txt.indexOf('ocean')>=0)return 'OCEAN';
+  if(txt.indexOf('ltl')>=0)return 'LTL';
+  if(txt.indexOf('intermodal')>=0)return 'IMDL';
+  if(txt.indexOf('parcel')>=0)return 'PARCEL';
+  if(txt.indexOf('rail')>=0)return 'RAIL';
+  if(txt.indexOf('air')>=0)return 'AIR';
+  return '';
+}
+function riskNorm(txt){
+  txt=(txt||'').toUpperCase();
+  if(txt.indexOf('HIGH')>=0)return 'HIGH RISK';
+  if(txt.indexOf('WATCH')>=0)return 'WATCH';
+  if(txt.indexOf('EASING')>=0)return 'EASING';
+  if(txt.indexOf('STABLE')>=0)return 'STABLE';
+  return '';
+}
+function tagFilterables(){
+  document.querySelectorAll('#pane-overview .modes-grid > div').forEach(function(card){
+    var t=card.querySelector('p');
+    card.dataset.fmode=codeFromText(t?t.textContent:'');
+    card.dataset.frisk=riskNorm((card.textContent.match(/HIGH|WATCH|EASING|STABLE/i)||[''])[0]);
+  });
+  document.querySelectorAll('#pane-actions > div[data-action-id]').forEach(function(card){
+    var chip=card.querySelector('span[style*="EEF0E6"]');
+    card.dataset.fmode=codeFromText(chip?chip.textContent:'');
+  });
+  document.querySelectorAll('#lanes-tbl .lane-row').forEach(function(row){
+    if(!row.dataset.fmode) row.dataset.fmode=codeFromText(row.getAttribute('data-m')||row.textContent);
+    if(!row.dataset.frisk) row.dataset.frisk=riskNorm((row.textContent.match(/HIGH|WATCH|EASING|STABLE/i)||[''])[0]);
+  });
+}
+function activeFilterLabel(){
+  var p=[]; if(modeF!=='ALL')p.push(modeF); if(riskF!=='ALL')p.push(riskF);
+  return p.length?p.join(' · '):'these filters';
+}
+function showHideWithEmpty(sel, predicate, emptyId, paneSel, msg){
+  var any=false;
+  document.querySelectorAll(sel).forEach(function(el){
+    var ok=predicate(el); el.style.display=ok?'':'none'; if(ok) any=true;
+  });
+  var pane=document.querySelector(paneSel);
+  var empty=document.getElementById(emptyId);
+  if(pane && !empty){
+    empty=document.createElement('div'); empty.id=emptyId;
+    empty.style.cssText='display:none;background:#fff;border:1px dashed rgba(40,58,30,.3);border-radius:4px;padding:18px;text-align:center;color:#7A8575;font-size:12px;margin:10px 0';
+    pane.appendChild(empty);
+  }
+  if(empty){ empty.textContent=msg; empty.style.display=any?'none':'block'; }
+}
+function applyAllFilters(){
+  filterSigs(); // Market Signals cards + Event Radar (+ its own empty state)
+  // Overview transportation-mode cards (mode + risk)
+  showHideWithEmpty('#pane-overview .modes-grid > div', function(el){
+    return (modeF==='ALL'||el.dataset.fmode===modeF) && (riskF==='ALL'||el.dataset.frisk===riskF);
+  }, 'overview-modes-empty', '#pane-overview', 'No transportation modes match '+activeFilterLabel()+'. Set MODE/RISK to All to see every mode.');
+  // My Network lanes (mode + risk)
+  showHideWithEmpty('#lanes-tbl .lane-row', function(el){
+    return (modeF==='ALL'||el.dataset.fmode===modeF) && (riskF==='ALL'||el.dataset.frisk===riskF);
+  }, 'lanes-empty', '#pane-network', 'No lanes match '+activeFilterLabel()+'. Set MODE/RISK to All to see every lane.');
+  // Action Hub (mode)
+  showHideWithEmpty('#pane-actions > div[data-action-id]', function(el){
+    return modeF==='ALL'||el.dataset.fmode===modeF;
+  }, 'actions-empty', '#pane-actions', 'No actions are specific to '+(modeF!=='ALL'?modeF:'this mode')+'. Set MODE to All to see every action.');
+  // Rate Outlook — drive the chart to the selected mode
+  var idmap={REEFER:'reefer',DRYVAN:'dryvan',OCEAN:'ocean',LTL:'ltl'};
+  if(modeF!=='ALL'&&idmap[modeF]) setFcMode(idmap[modeF]);
 }
 
 function setModeF(m) {
@@ -968,8 +1043,7 @@ function setModeF(m) {
     b.className=b.className.replace(' ag','').replace('ag ','');
   });
   var e=document.getElementById('tm-'+m); if(e) e.className+=' ag';
-  switchTab('signals'); // these filters act on the Market Signals view
-  filterSigs();
+  applyAllFilters(); // refine the CURRENT tab in place
 }
 function setRiskF(r) {
   riskF=r;
@@ -978,8 +1052,7 @@ function setRiskF(r) {
   });
   var map={'ALL':'tr-ALL','HIGH RISK':'tr-HIGH','WATCH':'tr-WATCH','EASING':'tr-EASE'};
   var e=document.getElementById(map[r]); if(e) e.className+=' ao';
-  switchTab('signals');
-  filterSigs();
+  applyAllFilters();
 }
 function setDirF(d) {
   dirF=d;
@@ -1310,6 +1383,7 @@ function renderLanesTable(record){
     var rs=riskStyle(l.risk);
     var row=document.createElement('div');
     row.className='lane-row'; row.setAttribute('data-id',l.id);
+    row.dataset.fmode=codeFromText(l.m); row.dataset.frisk=riskNorm(l.risk);
     if(hasHist){row.style.cursor='pointer';row.onclick=function(){toggleLane(l.id);};}
     else{row.style.cursor='default';}
     var otifHtml;
@@ -1339,6 +1413,7 @@ function renderLanesTable(record){
   var spot=lanes.filter(function(l){return /spot/i.test(l.action||'');}).length;
   var otb=lanes.filter(function(l){var a=parseFloat(l.otif),t=parseFloat(l.otifTarget);return !isNaN(a)&&!isNaN(t)&&a<t;}).length;
   setText('stat-locknow',lock); setText('stat-monitor',mon); setText('stat-spot',spot); setText('stat-otifbelow',otb);
+  if(typeof applyAllFilters==='function') applyAllFilters(); // keep live lanes consistent with active filters
 }
 function setText(id,v){var el=document.getElementById(id); if(el) el.textContent=v;}
 
@@ -1527,13 +1602,8 @@ window.addEventListener('DOMContentLoaded',function(){
   });
   initActionChecklist();
 
-  // Add delta badge spans after each rate value in the mode cards
-  var deltaMap=[
-    {sel:'[data-delta="reefer"]',id:'delta-reefer'},
-    {sel:'[data-delta="dryvan"]',id:'delta-dryvan'},
-    {sel:'[data-delta="ocean"]',id:'delta-ocean'},
-    {sel:'[data-delta="diesel"]',id:'delta-diesel'},
-  ];
+  // Tag mode cards / lanes / actions so MODE+RISK filters work on every tab
+  tagFilterables();
 
   // Load live data
   loadData(false);
