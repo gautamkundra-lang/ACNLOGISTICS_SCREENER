@@ -211,7 +211,7 @@ a{color:inherit;text-decoration:none}
     </div>
   </div>
   <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;flex-shrink:0;min-width:420px">
-    <div style="background:#FDE8E5;border-radius:4px;padding:10px 12px;border-left:3px solid #C83020"><p style="font-size:9px;color:#A02010;text-transform:uppercase;letter-spacing:.07em;margin:0 0 3px;font-weight:700">Monthly extra cost</p><p style="font-size:16px;font-weight:700;font-family:monospace;color:#A02010;margin:0">+$420K</p><p style="font-size:9px;color:#A02010;margin:1px 0 0">vs budget baseline</p></div>
+    <div style="background:#FDE8E5;border-radius:4px;padding:10px 12px;border-left:3px solid #C83020"><p style="font-size:9px;color:#A02010;text-transform:uppercase;letter-spacing:.07em;margin:0 0 3px;font-weight:700">Monthly extra cost</p><p id="ctci-exposure" style="font-size:16px;font-weight:700;font-family:monospace;color:#A02010;margin:0">+$420K</p><p id="ctci-exposure-sub" style="font-size:9px;color:#A02010;margin:1px 0 0">vs budget baseline</p></div>
     <div style="background:#FDE8E5;border-radius:4px;padding:10px 12px;border-left:3px solid #C83020"><p style="font-size:9px;color:#A02010;text-transform:uppercase;letter-spacing:.07em;margin:0 0 3px;font-weight:700">Worst headwind</p><p style="font-size:16px;font-weight:700;font-family:monospace;color:#A02010;margin:0">Reefer TL</p><p style="font-size:9px;color:#A02010;margin:1px 0 0">+8.2% &middot; Organic Deli exposed</p></div>
     <div style="background:#E0EDCC;border-radius:4px;padding:10px 12px;border-left:3px solid #3B5E28"><p style="font-size:9px;color:#2E4A20;text-transform:uppercase;letter-spacing:.07em;margin:0 0 3px;font-weight:700">Best tailwind</p><p style="font-size:16px;font-weight:700;font-family:monospace;color:#2E4A20;margin:0">Ocean FCL</p><p style="font-size:9px;color:#2E4A20;margin:1px 0 0">-8.3% &middot; Buy window open</p></div>
     <div style="background:#FDE8E5;border-radius:4px;padding:10px 12px;border-left:3px solid #C83020"><p style="font-size:9px;color:#A02010;text-transform:uppercase;letter-spacing:.07em;margin:0 0 3px;font-weight:700">OTIF Alert</p><p style="font-size:16px;font-weight:700;font-family:monospace;color:#A02010;margin:0">94.2%</p><p style="font-size:9px;color:#A02010;margin:1px 0 0">Mass Retailer target: 98.5%</p></div>
@@ -224,6 +224,28 @@ a{color:inherit;text-decoration:none}
   <span id="oes-top" style="font-size:12px;color:#4A5548;flex:1;min-width:160px"></span>
   <span style="font-size:10px;font-weight:700;color:#7B5EA7;text-decoration:underline;white-space:nowrap">View radar →</span>
 </div>
+
+<!-- What changed since yesterday + alerts -->
+<div id="whatschanged-card" class="no-print" style="display:none;background:#fff;border:1px solid rgba(40,58,30,.15);border-left:3px solid #3B5E28;border-radius:4px;padding:12px 16px;margin-bottom:18px">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:6px">
+    <span style="font-size:10px;font-weight:700;color:#3B5E28;text-transform:uppercase;letter-spacing:.12em">What changed since last refresh</span>
+    <button onclick="toggleAlerts()" style="font-size:10px;font-weight:700;color:#3B5E28;background:#E0EDCC;border:none;border-radius:4px;padding:4px 10px;cursor:pointer;font-family:inherit">&#9881; Set alerts</button>
+  </div>
+  <div id="whatschanged-body" style="font-size:12px;color:#4A5548;line-height:1.6"></div>
+  <div id="alerts-panel" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid rgba(40,58,30,.12)">
+    <p style="font-size:10px;color:#7A8575;margin:0 0 8px">Notify me (banner) when a metric crosses my threshold:</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px">
+      <label style="font-size:11px;color:#4A5548">Reefer TL &gt; $<input id="al-reefer" type="number" step="0.01" style="width:64px;font-size:11px;padding:3px 5px;border:1px solid rgba(40,58,30,.25);border-radius:3px;font-family:monospace">/mi</label>
+      <label style="font-size:11px;color:#4A5548">Dry Van &gt; $<input id="al-dryvan" type="number" step="0.01" style="width:64px;font-size:11px;padding:3px 5px;border:1px solid rgba(40,58,30,.25);border-radius:3px;font-family:monospace">/mi</label>
+      <label style="font-size:11px;color:#4A5548">Diesel &gt; $<input id="al-diesel" type="number" step="0.01" style="width:64px;font-size:11px;padding:3px 5px;border:1px solid rgba(40,58,30,.25);border-radius:3px;font-family:monospace">/gal</label>
+      <label style="font-size:11px;color:#4A5548">Ocean SH-LA &gt; $<input id="al-ocean" type="number" step="50" style="width:72px;font-size:11px;padding:3px 5px;border:1px solid rgba(40,58,30,.25);border-radius:3px;font-family:monospace">/FEU</label>
+      <label style="font-size:11px;color:#4A5548">Tender rej. &gt; <input id="al-tender" type="number" step="0.1" style="width:56px;font-size:11px;padding:3px 5px;border:1px solid rgba(40,58,30,.25);border-radius:3px;font-family:monospace">%</label>
+    </div>
+    <button onclick="saveAlerts()" style="margin-top:9px;font-size:11px;font-weight:700;color:#fff;background:#3B5E28;border:none;border-radius:4px;padding:5px 14px;cursor:pointer;font-family:inherit">Save alerts</button>
+    <span id="alerts-saved" style="font-size:10px;color:#3B5E28;margin-left:8px;display:none">Saved &#10003;</span>
+  </div>
+</div>
+
 <div class="intel-card">
   <div class="intel-lbl">Intelligence Summary</div>
   <div class="intel-text" id="intel-txt">Reefer TL spot rates are up 8.2% over 30 days to $3.47/mi with load-to-truck ratios at 8.2 -- a critical level -- driven by Q3 produce season competing with Organic Deli and CPG Foods refrigerated outbound from Plant A (MN). Hurricane Beryl is tracking the Gulf Coast with 78% disruption probability posing $2.8-4.2M exposure to refrigerated outbound lanes. Panama Canal remains constrained adding $400-600/FEU on Canned Meat ingredient imports while ocean FCL has softened 8.3% creating a Q4 ingredient buying window before Asia peak loading begins August 1. OTIF at Mass Retailer is 94.2% vs. the 98.5% target -- in penalty territory -- adding urgency to reefer capacity actions.</div>
@@ -1111,6 +1133,23 @@ function filterSigs() {
   }
 }
 
+// Forecast-driven lock-vs-ride-spot recommendation for a lane
+function lockVsRide(lane){
+  var idmap={REEFER:'reefer',DRYVAN:'dryvan',OCEAN:'ocean',LTL:'ltl',IMDL:'imdl',AIR:'air',RAIL:'rail',PARCEL:'parcel'};
+  var fid=idmap[codeFromText(lane.m)]; if(!fid) return '';
+  var m=null; for(var i=0;i<MODES_FC.length;i++){ if(MODES_FC[i].id===fid){ m=MODES_FC[i]; break; } }
+  if(!m||!m.rn) return '';
+  var pct=(m.fc30-m.rn)/m.rn*100;
+  var rec,col,bg,why;
+  if(pct>=1.5){ rec='LOCK NOW'; col='#A02010'; bg='#FDE8E5'; why='Base case projects <strong>+'+pct.toFixed(1)+'%</strong> over 30 days — lock contract capacity before the increase to secure budget certainty.'; }
+  else if(pct<=-1.5){ rec='RIDE SPOT'; col='#2E4A20'; bg='#E0EDCC'; why='Base case projects <strong>'+pct.toFixed(1)+'%</strong> over 30 days — favor spot / delay commitments to capture the decline.'; }
+  else { rec='SPLIT · SHORT-TERM'; col='#B85A18'; bg='#FEF0E5'; why='Base case is roughly flat (<strong>'+(pct>=0?'+':'')+pct.toFixed(1)+'%</strong>) — split volume between contract and spot and keep terms short.'; }
+  var conf=m.confidence?(' &middot; '+escHtml(m.confidence)+' confidence'):'';
+  return '<div style="background:'+bg+';border-radius:4px;padding:10px 14px;margin-top:12px">'
+    +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;flex-wrap:wrap"><span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#5A6355">Procurement guidance</span>'
+    +'<span style="font-size:12px;font-weight:800;color:'+col+'">'+rec+'</span><span style="font-size:10px;color:#7A8575">'+conf+'</span></div>'
+    +'<p style="font-size:11px;color:#4A5548;margin:0;line-height:1.5">'+why+' Break-even: lock only if you expect a rise larger than your contract premium over spot.</p></div>';
+}
 function toggleLane(id) {
   var det=document.getElementById('lane-det');
   if(selLane===id){
@@ -1152,7 +1191,8 @@ function toggleLane(id) {
     +'<svg width="100%" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet" style="display:block">'
     +'<g transform="translate('+ML+','+MT+')">'+grid
     +'<polyline points="'+pts+'" fill="none" stroke="'+col+'" stroke-width="2" stroke-linecap="round"/>'+xl
-    +'</g></svg>';
+    +'</g></svg>'
+    +lockVsRide(lane);
   det.classList.add('open');
 }
 
@@ -1162,6 +1202,37 @@ function setFcMode(id) {
   document.querySelectorAll('.fc-mode-btn').forEach(function(b){b.className=b.className.replace(' fma','');});
   var btn=document.querySelector('[data-mid="'+id+'"]'); if(btn) btn.className+=' fma';
   renderFcChart(id);
+}
+// Modeled monthly transportation spend per mode — illustrative assumptions used
+// for $ exposure math. Replace with actuals from your TMS/data lake feed.
+var MODE_EXP={reefer:2400000,dryvan:3100000,ltl:900000,imdl:600000,ocean:1800000,air:200000,rail:400000,parcel:500000};
+var DRIVER_CATS=[
+  {key:'demand',label:'Demand'},
+  {key:'capacity',label:'Capacity / Supply'},
+  {key:'fuel',label:'Fuel & Cost'},
+  {key:'seasonality',label:'Seasonality'},
+  {key:'network',label:'Network / Ops'},
+  {key:'macro',label:'Macro'},
+  {key:'events',label:'Events'},
+  {key:'market',label:'Market Structure'}
+];
+function dirGlyph(dir){
+  dir=String(dir||'').toLowerCase();
+  if(dir==='up')return {sym:'▲',col:'#A02010'};
+  if(dir==='down')return {sym:'▼',col:'#2E4A20'};
+  return {sym:'—',col:'#5A6355'};
+}
+function fmtMoney(n){
+  var a=Math.abs(n), s=n<0?'-':'+';
+  if(a>=1e6) return s+'$'+(a/1e6).toFixed(a>=1e7?0:1)+'M';
+  if(a>=1e3) return s+'$'+Math.round(a/1e3)+'K';
+  return s+'$'+Math.round(a);
+}
+function confBadge(c){
+  c=String(c||'').toLowerCase();
+  var map={high:{bg:'#E0EDCC',fg:'#2E4A20'},medium:{bg:'#FEF0E5',fg:'#B85A18'},low:{bg:'#FDE8E5',fg:'#A02010'}};
+  if(!map[c]) return '';
+  return '<span style="font-size:9px;font-weight:700;padding:2px 8px;border-radius:3px;background:'+map[c].bg+';color:'+map[c].fg+';text-transform:uppercase;letter-spacing:.06em">Confidence: '+c+'</span>';
 }
 function renderFcChart(id) {
   var mode=null;
@@ -1208,11 +1279,15 @@ function renderFcChart(id) {
   var baseCol=up?'#C83020':'#3B5E28';
   var pctF=function(v){return((v-rn)/rn*100).toFixed(1)+'%';};
   var fmtV=function(v){return v>100?'$'+Math.round(v):'$'+v.toFixed(2);};
-  var statsHtml='<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:12px">'
-    +'<div style="background:#F0F1E8;border-radius:4px;padding:10px 12px"><p style="font-size:9px;color:#7A8575;text-transform:uppercase;letter-spacing:.07em;margin:0 0 3px">Current</p><p style="font-size:15px;font-weight:700;font-family:monospace;color:#1A2816;margin:0">'+mode.rate+'</p></div>'
-    +'<div style="background:#F0F1E8;border-radius:4px;padding:10px 12px"><p style="font-size:9px;color:#7A8575;text-transform:uppercase;letter-spacing:.07em;margin:0 0 3px">Base Case 30D</p><p style="font-size:15px;font-weight:700;font-family:monospace;color:'+baseCol+';margin:0">'+fmtV(fc30)+'</p><p style="font-size:10px;color:#7A8575;margin:2px 0 0">'+(up?'+':'')+pctF(fc30)+' vs now</p></div>'
-    +'<div style="background:#E0EDCC;border-radius:4px;padding:10px 12px"><p style="font-size:9px;color:#2E4A20;text-transform:uppercase;letter-spacing:.07em;margin:0 0 3px">Bull (rates fall)</p><p style="font-size:15px;font-weight:700;font-family:monospace;color:#2E4A20;margin:0">'+fmtV(fcbull)+'</p><p style="font-size:10px;color:#2E4A20;margin:2px 0 0">'+pctF(fcbull)+' vs now</p></div>'
-    +'<div style="background:#FDE8E5;border-radius:4px;padding:10px 12px"><p style="font-size:9px;color:#A02010;text-transform:uppercase;letter-spacing:.07em;margin:0 0 3px">Bear (rates rise)</p><p style="font-size:15px;font-weight:700;font-family:monospace;color:#A02010;margin:0">'+fmtV(fcbear)+'</p><p style="font-size:10px;color:#A02010;margin:2px 0 0">+'+pctF(fcbear)+' vs now</p></div>'
+  var exp=MODE_EXP[mode.id]||0;
+  var dImp=function(v){return exp?'<p style="font-size:10px;font-weight:600;color:#5A6355;margin:1px 0 0">'+fmtMoney((v-rn)/rn*exp)+'/mo</p>':'';};
+  var headHtml='<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">'
+    +'<p style="font-size:12px;font-weight:700;color:#1A2816;margin:0">'+escHtml(mode.n)+' &middot; 30-Day Outlook</p>'+confBadge(mode.confidence)+'</div>';
+  var statsHtml=headHtml+'<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:12px">'
+    +'<div style="background:#F0F1E8;border-radius:4px;padding:10px 12px"><p style="font-size:9px;color:#7A8575;text-transform:uppercase;letter-spacing:.07em;margin:0 0 3px">Current</p><p style="font-size:15px;font-weight:700;font-family:monospace;color:#1A2816;margin:0">'+mode.rate+'</p>'+(exp?'<p style="font-size:10px;color:#7A8575;margin:1px 0 0">~'+fmtMoney(exp).replace('+','')+'/mo spend</p>':'')+'</div>'
+    +'<div style="background:#F0F1E8;border-radius:4px;padding:10px 12px"><p style="font-size:9px;color:#7A8575;text-transform:uppercase;letter-spacing:.07em;margin:0 0 3px">Base Case 30D</p><p style="font-size:15px;font-weight:700;font-family:monospace;color:'+baseCol+';margin:0">'+fmtV(fc30)+'</p><p style="font-size:10px;color:#7A8575;margin:2px 0 0">'+(up?'+':'')+pctF(fc30)+' vs now</p>'+dImp(fc30)+'</div>'
+    +'<div style="background:#E0EDCC;border-radius:4px;padding:10px 12px"><p style="font-size:9px;color:#2E4A20;text-transform:uppercase;letter-spacing:.07em;margin:0 0 3px">Bull (rates fall)</p><p style="font-size:15px;font-weight:700;font-family:monospace;color:#2E4A20;margin:0">'+fmtV(fcbull)+'</p><p style="font-size:10px;color:#2E4A20;margin:2px 0 0">'+pctF(fcbull)+' vs now</p>'+dImp(fcbull)+'</div>'
+    +'<div style="background:#FDE8E5;border-radius:4px;padding:10px 12px"><p style="font-size:9px;color:#A02010;text-transform:uppercase;letter-spacing:.07em;margin:0 0 3px">Bear (rates rise)</p><p style="font-size:15px;font-weight:700;font-family:monospace;color:#A02010;margin:0">'+fmtV(fcbear)+'</p><p style="font-size:10px;color:#A02010;margin:2px 0 0">+'+pctF(fcbear)+' vs now</p>'+dImp(fcbear)+'</div>'
     +'</div>';
   var chartSvg='<svg width="100%" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet" style="display:block">'
     +'<g transform="translate('+ML+','+MT+')">'+grid+nowLine
@@ -1227,16 +1302,31 @@ function renderFcChart(id) {
     +'<span style="font-size:11px;color:#7A8575;display:flex;align-items:center;gap:5px"><svg width="20" height="8"><line x1="0" y1="4" x2="20" y2="4" stroke="#639922" stroke-width="1.5" stroke-dasharray="3 3"/></svg>Bull (rates fall)</span>'
     +'<span style="font-size:11px;color:#7A8575;display:flex;align-items:center;gap:5px"><svg width="20" height="8"><line x1="0" y1="4" x2="20" y2="4" stroke="#E24B4A" stroke-width="1.5" stroke-dasharray="3 3"/></svg>Bear (rates rise)</span>'
     +'</div>';
-  // Event drivers behind the outlook (populated by the live engine)
+  // "What's driving this outlook" — canonical freight-rate driver framework
   var driversHtml='';
-  if(mode.drivers && mode.drivers.length){
+  var ds=mode.dsignals||[];
+  if(ds.length){
+    var cells=DRIVER_CATS.map(function(cat){
+      var sig=null; for(var i=0;i<ds.length;i++){ if((ds[i].cat||'').toLowerCase()===cat.key){ sig=ds[i]; break; } }
+      var g=dirGlyph(sig?sig.dir:'neutral');
+      return '<div style="display:flex;align-items:flex-start;gap:9px;padding:7px 0;border-bottom:1px solid rgba(40,58,30,.07)">'
+        +'<span style="font-size:13px;font-weight:700;color:'+g.col+';width:14px;text-align:center;flex-shrink:0">'+g.sym+'</span>'
+        +'<div style="flex:1;min-width:0"><span style="font-size:11px;font-weight:700;color:#1A2816">'+cat.label+'</span>'
+        +(sig&&sig.note?'<span style="font-size:11px;color:#7A8575"> &mdash; '+escHtml(sig.note)+'</span>':'')+'</div></div>';
+    }).join('');
+    driversHtml='<div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-left:3px solid #7B5EA7;border-radius:4px;padding:12px 16px;margin-top:14px">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:4px"><p style="font-size:10px;font-weight:700;color:#7B5EA7;text-transform:uppercase;letter-spacing:.1em;margin:0">What\'s driving this outlook</p>'
+      +'<span style="font-size:10px;color:#9AA295">&#9650; pushes rates up &middot; &#9660; down &middot; &mdash; neutral</span></div>'
+      +cells+'</div>';
+  } else if(mode.drivers && mode.drivers.length){
     var items=mode.drivers.map(function(d){return '<li style="margin-bottom:3px">'+escHtml(d)+'</li>';}).join('');
     driversHtml='<div style="background:#F4F5EE;border:1px solid rgba(40,58,30,.12);border-left:3px solid #7B5EA7;border-radius:4px;padding:10px 14px;margin-top:12px">'
-      +'<p style="font-size:10px;font-weight:700;color:#7B5EA7;text-transform:uppercase;letter-spacing:.1em;margin:0 0 6px">Risk factors driving this outlook</p>'
+      +'<p style="font-size:10px;font-weight:700;color:#7B5EA7;text-transform:uppercase;letter-spacing:.1em;margin:0 0 6px">What\'s driving this outlook</p>'
       +'<ul style="font-size:12px;color:#4A5548;line-height:1.5;margin:0;padding-left:18px">'+items+'</ul></div>';
   }
   var liveTag=mode.live?'<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;background:#E0EDCC;color:#2E4A20;margin-left:6px">LIVE · EVENT-ADJUSTED</span>':'';
-  el.innerHTML=statsHtml+chartSvg+legendHtml+driversHtml+'<p style="font-size:11px;color:#7A8575;margin-top:8px">'+mode.src+' | '+mode.ctx+liveTag+'</p>';
+  var methodology='<p style="font-size:10px;color:#9AA295;margin-top:8px;line-height:1.5">Methodology: 30-day directional call blending current web-grounded rates, the live Event Radar, and historical seasonality. $ impact is modeled on estimated monthly spend (connect your TMS for actuals). Directional guidance — validate against the Sources tab before contracting.</p>';
+  el.innerHTML=statsHtml+chartSvg+legendHtml+driversHtml+'<p style="font-size:11px;color:#7A8575;margin-top:8px">'+mode.src+' | '+mode.ctx+liveTag+'</p>'+methodology;
 }
 
 // ── Data loading from /api/data ────────────────────────────────────────────
@@ -1269,6 +1359,7 @@ function loadData(manual) {
 }
 
 function applyData(cur, prev) {
+  window._lastData=cur; // for live alert re-evaluation
   // Intelligence summary
   if(cur.intel_summary) document.getElementById('intel-txt').textContent=cur.intel_summary;
 
@@ -1296,6 +1387,9 @@ function applyData(cur, prev) {
   // Event Risk Radar + event-adjusted forecasts (live engine)
   renderEventRadar(cur.events);
   applyForecasts(cur.forecasts);
+
+  // "What changed" briefing (needs a previous snapshot)
+  renderWhatsChanged(cur, prev);
 }
 
 function escHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
@@ -1364,11 +1458,28 @@ function applyForecasts(forecasts){
     if(typeof f.bull==='number') m.fcbull=f.bull;
     if(typeof f.bear==='number') m.fcbear=f.bear;
     m.drivers=Array.isArray(f.drivers)?f.drivers:[];
+    m.confidence=f.confidence||'';
+    m.dsignals=Array.isArray(f.driver_signals)?f.driver_signals:[];
     m.live=true;
   });
+  updateExposureTile();
   // Re-render the forecast chart if that tab is visible
   var fp=document.getElementById('pane-forecast');
   if(fp && fp.style.display!=='none') renderFcChart(currentFcMode);
+}
+// Live network $ exposure (base-case 30-day vs current) shown on Overview
+function updateExposureTile(){
+  var total=0, haveLive=false;
+  MODES_FC.forEach(function(m){
+    var exp=MODE_EXP[m.id]||0; if(!exp||!m.rn) return;
+    if(m.live) haveLive=true;
+    total += (m.fc30-m.rn)/m.rn*exp;
+  });
+  var el=document.getElementById('ctci-exposure'); if(!el) return;
+  if(!haveLive) return; // keep baseline text until live forecasts arrive
+  el.textContent=fmtMoney(total);
+  var sub=document.getElementById('ctci-exposure-sub');
+  if(sub) sub.textContent=(total>=0?'base-case rise vs current':'base-case savings vs current')+' · modeled';
 }
 
 function riskStyle(r){
@@ -1451,10 +1562,18 @@ var ESCALATION_THRESHOLDS=[
 ];
 function checkEscalations(data){
   var triggered=ESCALATION_THRESHOLDS.filter(function(t){return t.fn(data);}).map(function(t){return t.label;});
+  // User-defined alert thresholds (localStorage)
+  var a=loadAlerts();
+  if(a.reefer && data.reefer && data.reefer.rate>+a.reefer) triggered.push('My alert: Reefer > $'+a.reefer+'/mi (now $'+data.reefer.rate+')');
+  if(a.dryvan && data.dryvan && data.dryvan.rate>+a.dryvan) triggered.push('My alert: Dry Van > $'+a.dryvan+'/mi (now $'+data.dryvan.rate+')');
+  if(a.diesel && data.diesel && data.diesel.price>+a.diesel) triggered.push('My alert: Diesel > $'+a.diesel+'/gal (now $'+data.diesel.price+')');
+  if(a.ocean && data.ocean_sh_la && data.ocean_sh_la.rate>+a.ocean) triggered.push('My alert: Ocean > $'+a.ocean+'/FEU (now $'+data.ocean_sh_la.rate+')');
+  if(a.tender && data.tender_rej && data.tender_rej.pct>+a.tender) triggered.push('My alert: Tender rej. > '+a.tender+'% (now '+data.tender_rej.pct+'%)');
+
   var banner=document.getElementById('esc-banner');
   var badge=document.getElementById('actions-badge');
   if(triggered.length){
-    document.getElementById('esc-banner-txt').textContent=triggered.length+' Escalation Trigger'+(triggered.length>1?'s':'')+' Active: '+triggered.join(' · ');
+    document.getElementById('esc-banner-txt').textContent=triggered.length+' Trigger'+(triggered.length>1?'s':'')+' Active: '+triggered.join(' · ');
     banner.style.display='flex';
     badge.style.display='inline-block';
     badge.textContent=triggered.length;
@@ -1462,6 +1581,61 @@ function checkEscalations(data){
     banner.style.display='none';
     badge.style.display='none';
   }
+}
+
+// ── User alert thresholds (localStorage) ────────────────────────────────────
+function loadAlerts(){
+  try{ return JSON.parse(localStorage.getItem('cpg-alerts')||'{}'); }catch(e){ return {}; }
+}
+function toggleAlerts(){
+  var p=document.getElementById('alerts-panel'); if(!p) return;
+  var show=p.style.display==='none';
+  p.style.display=show?'block':'none';
+  if(show){
+    var a=loadAlerts();
+    ['reefer','dryvan','diesel','ocean','tender'].forEach(function(k){
+      var el=document.getElementById('al-'+k); if(el) el.value=a[k]||'';
+    });
+  }
+}
+function saveAlerts(){
+  var a={};
+  ['reefer','dryvan','diesel','ocean','tender'].forEach(function(k){
+    var el=document.getElementById('al-'+k); var v=el&&el.value.trim();
+    if(v) a[k]=v;
+  });
+  localStorage.setItem('cpg-alerts', JSON.stringify(a));
+  var s=document.getElementById('alerts-saved'); if(s){ s.style.display='inline'; setTimeout(function(){s.style.display='none';},2000); }
+  if(window._lastData) checkEscalations(window._lastData); // re-evaluate immediately
+}
+
+// ── "What changed since last refresh" briefing (client-side from deltas) ─────
+function renderWhatsChanged(cur, prev){
+  var card=document.getElementById('whatschanged-card'), body=document.getElementById('whatschanged-body');
+  if(!card||!body) return;
+  if(!prev){ card.style.display='none'; return; }
+  var rows=[];
+  function line(label, c, p, unit, prefix){
+    if(c==null||p==null) return;
+    var diff=c-p; if(Math.abs(diff)<1e-9){ return; }
+    var pct=p?(diff/p*100):0;
+    var up=diff>0;
+    var arrow=up?'▲':'▼';
+    var col=up?'#A02010':'#2E4A20';
+    rows.push('<div style="display:flex;align-items:baseline;gap:6px"><span style="color:'+col+';font-weight:700">'+arrow+'</span><span><strong>'+label+'</strong> '+(prefix||'')+c+(unit||'')+' <span style="color:#7A8575">('+(up?'+':'')+pct.toFixed(1)+'% vs last)</span></span></div>');
+  }
+  line('Reefer TL', cur.reefer&&cur.reefer.rate, prev.reefer&&prev.reefer.rate, '/mi', '$');
+  line('Dry Van', cur.dryvan&&cur.dryvan.rate, prev.dryvan&&prev.dryvan.rate, '/mi', '$');
+  line('Diesel', cur.diesel&&cur.diesel.price, prev.diesel&&prev.diesel.price, '/gal', '$');
+  line('Ocean SH-LA', cur.ocean_sh_la&&cur.ocean_sh_la.rate, prev.ocean_sh_la&&prev.ocean_sh_la.rate, '/FEU', '$');
+  line('Tender rej.', cur.tender_rej&&cur.tender_rej.pct, prev.tender_rej&&prev.tender_rej.pct, '%', '');
+  // New events appearing since last refresh
+  var prevTitles=(prev.events||[]).map(function(e){return e.title;});
+  var newEvents=(cur.events||[]).filter(function(e){return prevTitles.indexOf(e.title)<0;});
+  if(newEvents.length) rows.push('<div style="margin-top:4px"><strong>'+newEvents.length+' new event'+(newEvents.length>1?'s':'')+':</strong> '+escHtml(newEvents.map(function(e){return e.title;}).slice(0,3).join('; '))+'</div>');
+  if(!rows.length){ body.innerHTML='<span style="color:#7A8575">No material changes since the last refresh.</span>'; }
+  else { body.innerHTML=rows.join(''); }
+  card.style.display='block';
 }
 
 // ── Action checklist (localStorage) ────────────────────────────────────────

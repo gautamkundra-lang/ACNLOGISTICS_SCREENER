@@ -85,7 +85,8 @@ function fmtLive(data) {
     lines.push('30-DAY RATE OUTLOOK (base/bull=rates fall/bear=rates rise, with event drivers):');
     Object.entries(data.forecasts).forEach(([mode, f]) => {
       const drivers = Array.isArray(f.drivers) ? f.drivers.join('; ') : '';
-      lines.push(`- ${mode}: base ${f.base}, bull ${f.bull}, bear ${f.bear}. Drivers: ${drivers}`);
+      const conf = f.confidence ? ` (confidence: ${f.confidence})` : '';
+      lines.push(`- ${mode}: base ${f.base}, bull ${f.bull}, bear ${f.bear}${conf}. Drivers: ${drivers}`);
     });
   }
 

@@ -23,7 +23,12 @@ PART B — EVENT RISK SCAN (this is critical): actively search for CURRENT and d
 - fuel_energy: diesel/oil price shocks, refinery outages, fuel surcharge shifts
 - regulatory: emissions rules, hours-of-service, drayage/clean-truck mandates, customs changes
 
-PART C — RATE OUTLOOK that INCORPORATES the Part B events. For EACH mode (reefer, dryvan, ltl, imdl, ocean, air, rail, parcel) give a 30-day forecast as base/bull(rates fall, favorable)/bear(rates rise, unfavorable) numbers in that mode's native unit, and list the specific event drivers behind the outlook. Use your knowledge of historical freight-rate seasonality and typical patterns (e.g. produce season reefer tightening, Q4 holiday peak, Lunar New Year ocean slack) TOGETHER with the current events found via search to set realistic bull/base/bear levels — do not just echo the current rate. Each forecast's "drivers" must cite concrete reasons (seasonal pattern AND/OR a specific Part B event).
+PART C — RATE OUTLOOK that INCORPORATES the Part B events. For EACH mode (reefer, dryvan, ltl, imdl, ocean, air, rail, parcel) give a 30-day forecast as base/bull(rates fall, favorable)/bear(rates rise, unfavorable) numbers in that mode's native unit. Use your knowledge of historical freight-rate seasonality and typical patterns (e.g. produce season reefer tightening, Q4 holiday peak, Lunar New Year ocean slack) TOGETHER with the current events found via search to set realistic bull/base/bear levels — do not just echo the current rate.
+
+For each mode also provide:
+- "confidence": "high" | "medium" | "low" (how confident the 30-day call is).
+- "driver_signals": the standard freight-rate driver framework. For EACH of these eight categories give a direction — "up" (pushing rates up / unfavorable), "down" (pushing rates down / favorable), or "neutral" — plus a short note: demand, capacity (carrier/equipment supply, L:T ratio, tender rejection), fuel (diesel/energy cost), seasonality, network (port/rail/cold-storage/ops), macro (GDP/rates/FX/trade), events (the Part B disruptions), market (contract-vs-spot spread, carrier operating ratios, leverage cycle).
+Populate confidence AND the full 8-category driver_signals array for EVERY mode. The JSON below shows the complete shape only for "reefer" to save space — produce the same complete structure for all eight modes (do not leave driver_signals empty).
 
 Then write a 2–3 sentence CPG Foods-specific intelligence summary covering rate direction, the most important active event(s), and the single most important action to take today.
 
@@ -47,14 +52,25 @@ Return ONLY valid JSON, no markdown fences, this exact shape (units: reefer/dryv
       "source": "source name" }
   ],
   "forecasts": {
-    "reefer": { "base": 3.65, "bull": 3.52, "bear": 3.92, "drivers": ["event-based reason", "..."] },
-    "dryvan": { "base": 2.98, "bull": 2.82, "bear": 3.14, "drivers": ["..."] },
-    "ltl":    { "base": 97.2, "bull": 95.8, "bear": 99.6, "drivers": ["..."] },
-    "imdl":   { "base": 2.28, "bull": 2.12, "bear": 2.38, "drivers": ["..."] },
-    "ocean":  { "base": 3420, "bull": 3180, "bear": 3820, "drivers": ["..."] },
-    "air":    { "base": 5.08, "bull": 4.82, "bear": 5.42, "drivers": ["..."] },
-    "rail":   { "base": 1.94, "bull": 1.90, "bear": 1.98, "drivers": ["..."] },
-    "parcel": { "base": 8.88, "bull": 8.72, "bear": 9.08, "drivers": ["..."] }
+    "reefer": { "base": 3.65, "bull": 3.52, "bear": 3.92, "confidence": "medium",
+      "drivers": ["concise event/seasonal reason", "..."],
+      "driver_signals": [
+        { "cat": "demand", "dir": "up", "note": "short note" },
+        { "cat": "capacity", "dir": "up", "note": "L:T elevated" },
+        { "cat": "fuel", "dir": "up", "note": "diesel rising" },
+        { "cat": "seasonality", "dir": "up", "note": "produce season" },
+        { "cat": "network", "dir": "neutral", "note": "" },
+        { "cat": "macro", "dir": "neutral", "note": "" },
+        { "cat": "events", "dir": "up", "note": "tie to a Part B event" },
+        { "cat": "market", "dir": "up", "note": "spot above contract" }
+      ] },
+    "dryvan": { "base": 2.98, "bull": 2.82, "bear": 3.14, "confidence": "medium", "drivers": ["..."], "driver_signals": [] },
+    "ltl":    { "base": 97.2, "bull": 95.8, "bear": 99.6, "confidence": "medium", "drivers": ["..."], "driver_signals": [] },
+    "imdl":   { "base": 2.28, "bull": 2.12, "bear": 2.38, "confidence": "medium", "drivers": ["..."], "driver_signals": [] },
+    "ocean":  { "base": 3420, "bull": 3180, "bear": 3820, "confidence": "medium", "drivers": ["..."], "driver_signals": [] },
+    "air":    { "base": 5.08, "bull": 4.82, "bear": 5.42, "confidence": "low", "drivers": ["..."], "driver_signals": [] },
+    "rail":   { "base": 1.94, "bull": 1.90, "bear": 1.98, "confidence": "high", "drivers": ["..."], "driver_signals": [] },
+    "parcel": { "base": 8.88, "bull": 8.72, "bear": 9.08, "confidence": "high", "drivers": ["..."], "driver_signals": [] }
   },
   "disruptions": ["brief description of each active disruption"],
   "intel_summary": "2-3 sentence CPG Foods-specific market intelligence summary",
