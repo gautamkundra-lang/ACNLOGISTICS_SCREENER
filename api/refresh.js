@@ -32,7 +32,7 @@ Populate confidence AND the full 8-category driver_signals array for EVERY mode.
 
 Then write a 2–3 sentence CPG Foods-specific intelligence summary covering rate direction, the most important active event(s), and the single most important action to take today.
 
-Return ONLY valid JSON, no markdown fences, this exact shape (units: reefer/dryvan/imdl/rail $/mi, ltl $/cwt, ocean/air per FEU or $/kg, parcel $/pkg — match the dashboard):
+Return ONLY strict, valid JSON — no markdown fences, no comments, no trailing commas, and do NOT use double-quote characters inside any string value (paraphrase or use single quotes). Keep notes short. This exact shape (units: reefer/dryvan/imdl/rail $/mi, ltl $/cwt, ocean/air per FEU or $/kg, parcel $/pkg — match the dashboard):
 {
   "reefer": { "rate": 3.47, "chg_pct": 8.2, "src": "DAT", "asof": "YYYY-MM-DD" },
   "dryvan": { "rate": 2.84, "chg_pct": 5.4, "src": "DAT", "asof": "YYYY-MM-DD" },
@@ -79,6 +79,39 @@ Return ONLY valid JSON, no markdown fences, this exact shape (units: reefer/dryv
 
 const GEMINI_MODEL = 'gemini-2.5-flash';
 
+// Isolate the JSON object from model text and remove trailing commas.
+function extractJson(text) {
+  let s = (text || '').replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+  const start = s.indexOf('{');
+  const end = s.lastIndexOf('}');
+  if (start >= 0 && end > start) s = s.slice(start, end + 1);
+  return s.replace(/,(\s*[}\]])/g, '$1'); // strip trailing commas
+}
+
+// Parse the model output; if it's malformed, run a strict-JSON repair pass
+// through Gemini (no tools, so responseMimeType JSON is allowed).
+async function parseOrRepair(rawText) {
+  try {
+    return JSON.parse(extractJson(rawText));
+  } catch (e) {
+    const repairUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${process.env.GEMINI_API_KEY}`;
+    const res = await fetch(repairUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ role: 'user', parts: [{ text: 'Return ONLY this content as strict, valid, minified JSON. Fix any syntax errors (missing commas, unescaped quotes, trailing commas). Do not add or remove fields.\n\n' + rawText.slice(0, 24000) }] }],
+        generationConfig: { temperature: 0, responseMimeType: 'application/json', thinkingConfig: { thinkingBudget: 0 } },
+      }),
+    });
+    if (!res.ok) throw new Error(`Gemini repair ${res.status}`);
+    const payload = await res.json();
+    const cand = payload.candidates && payload.candidates[0];
+    const txt = cand && cand.content && Array.isArray(cand.content.parts)
+      ? cand.content.parts.map((p) => p.text || '').join('') : '';
+    return JSON.parse(extractJson(txt));
+  }
+}
+
 // Shared by api/cron.js so the daily job reuses the exact same logic.
 export async function runRefresh() {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${process.env.GEMINI_API_KEY}`;
@@ -110,12 +143,7 @@ export async function runRefresh() {
     rawText = cand.content.parts.map((p) => p.text || '').join('');
   }
 
-  // Strip any accidental markdown fences, then isolate the JSON object.
-  let jsonStr = rawText.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
-  const match = jsonStr.match(/\{[\s\S]*\}/);
-  if (match) jsonStr = match[0];
-
-  const data = JSON.parse(jsonStr);
+  const data = await parseOrRepair(rawText);
   data.fetched_at = data.fetched_at || new Date().toISOString();
 
   // Archive the previous snapshot for day-over-day deltas, then store latest.
