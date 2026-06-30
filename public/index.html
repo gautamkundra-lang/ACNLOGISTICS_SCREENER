@@ -95,6 +95,7 @@ a{color:inherit;text-decoration:none}
 @media(max-width:900px){
   .modes-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .sigs-grid{grid-template-columns:1fr}
+  #event-radar{grid-template-columns:1fr!important}
   .rt-hdr-row,.lane-row{grid-template-columns:2fr 1fr 1fr .8fr .8fr;font-size:11px}
   .rt-hdr-row .rt-hc:nth-child(n+6),.lane-row .rt-dc:nth-child(n+6){display:none}
 }
@@ -381,6 +382,16 @@ a{color:inherit;text-decoration:none}
 </div>
 <div id="pane-signals" class="tp" style="display:none">
 
+<!-- Live Event Risk Radar — populated from the daily engine (geopolitical, labor, weather, infrastructure, fuel, regulatory) -->
+<div id="event-radar-wrap" style="display:none;margin-bottom:20px">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+    <p class="sec-hdr" style="margin:0">Event Risk Radar &nbsp;<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;background:#E0EDCC;color:#2E4A20;vertical-align:middle">LIVE</span></p>
+    <span style="font-size:10px;color:#7A8575">Geopolitical · Labor · Weather · Infrastructure · Fuel · Regulatory</span>
+  </div>
+  <div id="event-radar" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"></div>
+</div>
+
+<p class="sec-hdr" id="signals-static-hdr">Reference Market Signals</p>
 <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;flex-wrap:wrap">
   <span style="font-size:10px;font-weight:700;color:#7A8575;text-transform:uppercase;letter-spacing:.1em;margin-right:4px">Direction:</span>
   <button class="stbtn sa" id="td-ALL" onclick="setDirF('ALL')">All Signals</button>
@@ -1075,7 +1086,16 @@ function renderFcChart(id) {
     +'<span style="font-size:11px;color:#7A8575;display:flex;align-items:center;gap:5px"><svg width="20" height="8"><line x1="0" y1="4" x2="20" y2="4" stroke="#639922" stroke-width="1.5" stroke-dasharray="3 3"/></svg>Bull (rates fall)</span>'
     +'<span style="font-size:11px;color:#7A8575;display:flex;align-items:center;gap:5px"><svg width="20" height="8"><line x1="0" y1="4" x2="20" y2="4" stroke="#E24B4A" stroke-width="1.5" stroke-dasharray="3 3"/></svg>Bear (rates rise)</span>'
     +'</div>';
-  el.innerHTML=statsHtml+chartSvg+legendHtml+'<p style="font-size:11px;color:#7A8575;margin-top:8px">'+mode.src+' | '+mode.ctx+'</p>';
+  // Event drivers behind the outlook (populated by the live engine)
+  var driversHtml='';
+  if(mode.drivers && mode.drivers.length){
+    var items=mode.drivers.map(function(d){return '<li style="margin-bottom:3px">'+escHtml(d)+'</li>';}).join('');
+    driversHtml='<div style="background:#F4F5EE;border:1px solid rgba(40,58,30,.12);border-left:3px solid #7B5EA7;border-radius:4px;padding:10px 14px;margin-top:12px">'
+      +'<p style="font-size:10px;font-weight:700;color:#7B5EA7;text-transform:uppercase;letter-spacing:.1em;margin:0 0 6px">Risk factors driving this outlook</p>'
+      +'<ul style="font-size:12px;color:#4A5548;line-height:1.5;margin:0;padding-left:18px">'+items+'</ul></div>';
+  }
+  var liveTag=mode.live?'<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;background:#E0EDCC;color:#2E4A20;margin-left:6px">LIVE · EVENT-ADJUSTED</span>':'';
+  el.innerHTML=statsHtml+chartSvg+legendHtml+driversHtml+'<p style="font-size:11px;color:#7A8575;margin-top:8px">'+mode.src+' | '+mode.ctx+liveTag+'</p>';
 }
 
 // ── Data loading from /api/data ────────────────────────────────────────────
@@ -1129,6 +1149,62 @@ function applyData(cur, prev) {
 
   // Escalation check
   checkEscalations(cur);
+
+  // Event Risk Radar + event-adjusted forecasts (live engine)
+  renderEventRadar(cur.events);
+  applyForecasts(cur.forecasts);
+}
+
+function escHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+var EVENT_CAT={
+  geopolitical:{label:'Geopolitical',icon:'🌍'},
+  labor:{label:'Labor',icon:'✊'},
+  weather:{label:'Weather',icon:'⛈'},
+  infrastructure:{label:'Infrastructure',icon:'🏗'},
+  fuel_energy:{label:'Fuel & Energy',icon:'⛽'},
+  regulatory:{label:'Regulatory',icon:'📜'}
+};
+function dirStyle(dir,sev){
+  if(dir==='headwind') return {bar:'#C83020',bg:'#FDE8E5',fg:'#A02010',sym:'▲',word:'HEADWIND'};
+  if(dir==='tailwind') return {bar:'#3B5E28',bg:'#E0EDCC',fg:'#2E4A20',sym:'▼',word:'TAILWIND'};
+  return {bar:'#888780',bg:'#EEF0E6',fg:'#5A6355',sym:'―',word:'NEUTRAL'};
+}
+function renderEventRadar(events){
+  var wrap=document.getElementById('event-radar-wrap');
+  var grid=document.getElementById('event-radar');
+  if(!wrap||!grid) return;
+  if(!Array.isArray(events)||!events.length){wrap.style.display='none';return;}
+  grid.innerHTML=events.map(function(e){
+    var cat=EVENT_CAT[e.category]||{label:e.category||'Event',icon:'•'};
+    var s=dirStyle(e.direction,e.severity);
+    var modes=(Array.isArray(e.modes)?e.modes:[]).map(function(m){return '<span style="font-size:9px;padding:1px 6px;background:#EEF0E6;color:#5A6355;border-radius:3px">'+escHtml(m)+'</span>';}).join(' ');
+    return '<div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-left:3px solid '+s.bar+';border-radius:4px;padding:12px 14px">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px">'
+      +'<span style="font-size:10px;font-weight:700;color:#7A8575;text-transform:uppercase;letter-spacing:.06em">'+cat.icon+' '+escHtml(cat.label)+'</span>'
+      +'<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;background:'+s.bg+';color:'+s.fg+'">'+s.sym+' '+s.word+(e.severity?' · '+escHtml(String(e.severity).toUpperCase()):'')+'</span></div>'
+      +'<p style="font-size:13px;font-weight:700;color:#1A2816;margin:0 0 4px;line-height:1.3">'+escHtml(e.title)+'</p>'
+      +'<p style="font-size:12px;color:#4A5548;margin:0 0 7px;line-height:1.5">'+escHtml(e.summary)+'</p>'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap">'
+      +'<div style="display:flex;gap:4px;flex-wrap:wrap">'+modes+'</div>'
+      +'<span style="font-size:10px;color:#7A8575">'+(e.horizon?escHtml(e.horizon)+' · ':'')+escHtml(e.source||'')+'</span></div></div>';
+  }).join('');
+  wrap.style.display='block';
+}
+function applyForecasts(forecasts){
+  if(!forecasts) return;
+  MODES_FC.forEach(function(m){
+    var f=forecasts[m.id];
+    if(!f) return;
+    if(typeof f.base==='number') m.fc30=f.base;
+    if(typeof f.bull==='number') m.fcbull=f.bull;
+    if(typeof f.bear==='number') m.fcbear=f.bear;
+    m.drivers=Array.isArray(f.drivers)?f.drivers:[];
+    m.live=true;
+  });
+  // Re-render the forecast chart if that tab is visible
+  var fp=document.getElementById('pane-forecast');
+  if(fp && fp.style.display!=='none') renderFcChart(currentFcMode);
 }
 
 function showDelta(id, cur, prv, prefix, suffix) {

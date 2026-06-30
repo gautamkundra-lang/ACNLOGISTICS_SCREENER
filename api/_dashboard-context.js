@@ -72,6 +72,23 @@ function fmtLive(data) {
   if (data.tender_rej) lines.push(`- Tender rejection rate: ${data.tender_rej.pct}%`);
   if (data.ltl) lines.push(`- LTL: $${data.ltl.rate}/cwt`);
   if (data.disruptions && data.disruptions.length) lines.push(`- Active disruptions: ${data.disruptions.join('; ')}`);
+
+  if (Array.isArray(data.events) && data.events.length) {
+    lines.push('EVENT RISK RADAR (geopolitical / labor / weather / infrastructure / fuel / regulatory events feeding the forecasts):');
+    data.events.forEach((e) => {
+      const modes = Array.isArray(e.modes) ? e.modes.join(', ') : '';
+      lines.push(`- [${e.category}] ${e.title} — ${e.direction}/${e.severity}, horizon ${e.horizon || 'n/a'}, affects ${modes}. ${e.summary || ''}`);
+    });
+  }
+
+  if (data.forecasts) {
+    lines.push('30-DAY RATE OUTLOOK (base/bull=rates fall/bear=rates rise, with event drivers):');
+    Object.entries(data.forecasts).forEach(([mode, f]) => {
+      const drivers = Array.isArray(f.drivers) ? f.drivers.join('; ') : '';
+      lines.push(`- ${mode}: base ${f.base}, bull ${f.bull}, bear ${f.bear}. Drivers: ${drivers}`);
+    });
+  }
+
   if (data.intel_summary) lines.push(`- Intelligence summary: ${data.intel_summary}`);
   return lines.join('\n');
 }

@@ -2,19 +2,30 @@ import { kv } from '@vercel/kv';
 
 export const config = { runtime: 'edge' };
 
-const LIVE_PROMPT = `Search the web for TODAY's current US freight market data (use live sources like DAT Freight, FreightWaves, EIA, Drewry). Find:
-1. DAT Freight trendlines — national average reefer TL spot rate ($/mile)
-2. DAT Freight trendlines — national average dry van TL spot rate ($/mile)
-3. EIA.gov latest weekly US national average diesel price ($/gallon)
-4. Drewry World Container Index — Shanghai to Los Angeles rate ($/FEU)
-5. FreightWaves SONAR or DAT — current reefer load-to-truck ratio (national)
-6. FreightWaves SONAR — current tender rejection rate (%)
-7. Cass Transportation Index or FreightWaves — LTL rate index ($/cwt) if available
-8. Any major disruptions in the past 48 hours affecting US freight (weather, port closures, strikes)
+const LIVE_PROMPT = `You are the data engine for a freight market screener used by the Hormel Foods transportation & procurement team. Search the web for CURRENT information (use live sources: DAT Freight, FreightWaves, EIA, Drewry, Freightos, plus reputable news for events) and return a single structured JSON object.
 
-Write a 2–3 sentence transportation market intelligence summary for the Hormel Foods supply chain team. Focus on: current reefer and dry van rate direction, any active disruptions (hurricane, port congestion, Panama Canal), and the single most important procurement action to take today.
+PART A — CURRENT RATES:
+1. DAT reefer TL national average spot rate ($/mile) and 30-day % change
+2. DAT dry van TL national average spot rate ($/mile) and 30-day % change
+3. EIA latest weekly US national average diesel price ($/gallon)
+4. Drewry World Container Index Shanghai→LA ($/FEU) and 30-day % change
+5. Reefer national load-to-truck ratio (DAT/FreightWaves)
+6. Tender rejection rate % (FreightWaves)
+7. LTL rate index ($/cwt) if available (Cass)
 
-Return ONLY valid JSON with no markdown fences:
+PART B — EVENT RISK SCAN (this is critical): actively search for CURRENT and developing events in EACH of these categories that could move freight rates over the next 0–60 days. For each material event, capture which freight modes it affects and whether it pushes rates UP (headwind) or DOWN (tailwind):
+- geopolitical: wars, sanctions, trade policy/tariffs, shipping-lane threats (e.g. Red Sea/Suez, Strait of Hormuz, Taiwan Strait)
+- labor: port/rail/trucking strikes, union negotiations (ILA/ILWU/Teamsters), work stoppages, slowdowns
+- weather: hurricanes/tropical systems, winter storms, flooding, wildfire, drought affecting waterways (e.g. Panama Canal draft)
+- infrastructure: port congestion, canal constraints/transit limits, rail network issues, bridge/road closures
+- fuel_energy: diesel/oil price shocks, refinery outages, fuel surcharge shifts
+- regulatory: emissions rules, hours-of-service, drayage/clean-truck mandates, customs changes
+
+PART C — RATE OUTLOOK that INCORPORATES the Part B events. For EACH mode (reefer, dryvan, ltl, imdl, ocean, air, rail, parcel) give a 30-day forecast as base/bull(rates fall, favorable)/bear(rates rise, unfavorable) numbers in that mode's native unit, and list the specific event drivers behind the outlook.
+
+Then write a 2–3 sentence Hormel-specific intelligence summary covering rate direction, the most important active event(s), and the single most important action to take today.
+
+Return ONLY valid JSON, no markdown fences, this exact shape (units: reefer/dryvan/imdl/rail $/mi, ltl $/cwt, ocean/air per FEU or $/kg, parcel $/pkg — match the dashboard):
 {
   "reefer": { "rate": 3.47, "chg_pct": 8.2, "src": "DAT", "asof": "YYYY-MM-DD" },
   "dryvan": { "rate": 2.84, "chg_pct": 5.4, "src": "DAT", "asof": "YYYY-MM-DD" },
@@ -23,8 +34,28 @@ Return ONLY valid JSON with no markdown fences:
   "ltr_reefer": { "ratio": 8.2, "src": "DAT/FreightWaves", "asof": "YYYY-MM-DD" },
   "tender_rej": { "pct": 18.4, "src": "FreightWaves", "asof": "YYYY-MM-DD" },
   "ltl": { "rate": 98.4, "src": "Cass Index", "asof": "YYYY-MM-DD" },
-  "disruptions": ["brief description of any active disruption"],
-  "intel_summary": "2–3 sentence Hormel-specific market intelligence summary",
+  "events": [
+    { "category": "geopolitical|labor|weather|infrastructure|fuel_energy|regulatory",
+      "title": "short headline",
+      "summary": "1-2 sentences on what is happening and the Hormel-relevant impact",
+      "modes": ["reefer","ocean"],
+      "direction": "headwind|tailwind|neutral",
+      "severity": "high|watch|easing",
+      "horizon": "e.g. 48-72 hrs / 30 days",
+      "source": "source name" }
+  ],
+  "forecasts": {
+    "reefer": { "base": 3.65, "bull": 3.52, "bear": 3.92, "drivers": ["event-based reason", "..."] },
+    "dryvan": { "base": 2.98, "bull": 2.82, "bear": 3.14, "drivers": ["..."] },
+    "ltl":    { "base": 97.2, "bull": 95.8, "bear": 99.6, "drivers": ["..."] },
+    "imdl":   { "base": 2.28, "bull": 2.12, "bear": 2.38, "drivers": ["..."] },
+    "ocean":  { "base": 3420, "bull": 3180, "bear": 3820, "drivers": ["..."] },
+    "air":    { "base": 5.08, "bull": 4.82, "bear": 5.42, "drivers": ["..."] },
+    "rail":   { "base": 1.94, "bull": 1.90, "bear": 1.98, "drivers": ["..."] },
+    "parcel": { "base": 8.88, "bull": 8.72, "bear": 9.08, "drivers": ["..."] }
+  },
+  "disruptions": ["brief description of each active disruption"],
+  "intel_summary": "2-3 sentence Hormel-specific market intelligence summary",
   "fetched_at": "ISO datetime"
 }`;
 
