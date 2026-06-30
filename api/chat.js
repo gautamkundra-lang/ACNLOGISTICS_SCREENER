@@ -3,8 +3,8 @@ import { buildSystemPrompt } from './_dashboard-context.js';
 
 export const config = { runtime: 'edge' };
 
-const MODEL = 'gpt-4o';
-const DAILY_LIMIT = 80;        // max copilot messages per IP per day (bounds OpenAI cost)
+const MODEL = 'gemini-2.5-flash';
+const DAILY_LIMIT = 80;        // max copilot messages per IP per day (bounds API cost)
 const MAX_HISTORY = 12;        // trailing messages kept for context
 
 export default async function handler(req) {
@@ -50,46 +50,45 @@ export default async function handler(req) {
     console.error('kv.get failed:', e);
   }
 
-  const messages = [
-    { role: 'system', content: buildSystemPrompt(liveData) },
-    ...userMessages.map((m) => ({
-      role: m.role === 'assistant' ? 'assistant' : 'user',
-      content: String(m.content || '').slice(0, 4000),
-    })),
-  ];
+  // Gemini takes the system prompt separately and maps roles to user/model.
+  const contents = userMessages.map((m) => ({
+    role: m.role === 'assistant' ? 'model' : 'user',
+    parts: [{ text: String(m.content || '').slice(0, 4000) }],
+  }));
 
-  const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
+  const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:streamGenerateContent?alt=sse&key=${process.env.GEMINI_API_KEY}`;
+  const geminiRes = await fetch(geminiUrl, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: MODEL,
-      messages,
-      stream: true,
-      temperature: 0.4,
-      max_tokens: 700,
+      systemInstruction: { parts: [{ text: buildSystemPrompt(liveData) }] },
+      contents,
+      generationConfig: {
+        temperature: 0.4,
+        maxOutputTokens: 800,
+        // Disable extended "thinking" for a snappy sidebar chat
+        thinkingConfig: { thinkingBudget: 0 },
+      },
     }),
   });
 
-  if (!openaiRes.ok || !openaiRes.body) {
-    const errText = await openaiRes.text().catch(() => '');
-    console.error('OpenAI error:', openaiRes.status, errText);
+  if (!geminiRes.ok || !geminiRes.body) {
+    const errText = await geminiRes.text().catch(() => '');
+    console.error('Gemini error:', geminiRes.status, errText);
     return new Response(JSON.stringify({ error: 'Upstream model error' }), {
       status: 502,
       headers: { 'Content-Type': 'application/json' },
     });
   }
 
-  // Transform OpenAI's SSE stream into plain text deltas for the browser
+  // Transform Gemini's SSE stream into plain text deltas for the browser
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
   let buffer = '';
 
   const stream = new ReadableStream({
     async start(controller) {
-      const reader = openaiRes.body.getReader();
+      const reader = geminiRes.body.getReader();
       try {
         while (true) {
           const { done, value } = await reader.read();
@@ -101,11 +100,12 @@ export default async function handler(req) {
             const trimmed = line.trim();
             if (!trimmed.startsWith('data:')) continue;
             const payload = trimmed.slice(5).trim();
-            if (payload === '[DONE]') continue;
+            if (!payload || payload === '[DONE]') continue;
             try {
               const json = JSON.parse(payload);
-              const delta = json.choices?.[0]?.delta?.content;
-              if (delta) controller.enqueue(encoder.encode(delta));
+              const parts = json.candidates?.[0]?.content?.parts || [];
+              const text = parts.map((p) => p.text || '').join('');
+              if (text) controller.enqueue(encoder.encode(text));
             } catch {
               /* ignore keep-alive / partial frames */
             }

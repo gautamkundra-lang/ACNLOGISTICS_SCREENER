@@ -21,7 +21,7 @@ PART B — EVENT RISK SCAN (this is critical): actively search for CURRENT and d
 - fuel_energy: diesel/oil price shocks, refinery outages, fuel surcharge shifts
 - regulatory: emissions rules, hours-of-service, drayage/clean-truck mandates, customs changes
 
-PART C — RATE OUTLOOK that INCORPORATES the Part B events. For EACH mode (reefer, dryvan, ltl, imdl, ocean, air, rail, parcel) give a 30-day forecast as base/bull(rates fall, favorable)/bear(rates rise, unfavorable) numbers in that mode's native unit, and list the specific event drivers behind the outlook.
+PART C — RATE OUTLOOK that INCORPORATES the Part B events. For EACH mode (reefer, dryvan, ltl, imdl, ocean, air, rail, parcel) give a 30-day forecast as base/bull(rates fall, favorable)/bear(rates rise, unfavorable) numbers in that mode's native unit, and list the specific event drivers behind the outlook. Use your knowledge of historical freight-rate seasonality and typical patterns (e.g. produce season reefer tightening, Q4 holiday peak, Lunar New Year ocean slack) TOGETHER with the current events found via search to set realistic bull/base/bear levels — do not just echo the current rate. Each forecast's "drivers" must cite concrete reasons (seasonal pattern AND/OR a specific Part B event).
 
 Then write a 2–3 sentence Hormel-specific intelligence summary covering rate direction, the most important active event(s), and the single most important action to take today.
 
@@ -59,39 +59,32 @@ Return ONLY valid JSON, no markdown fences, this exact shape (units: reefer/dryv
   "fetched_at": "ISO datetime"
 }`;
 
+const GEMINI_MODEL = 'gemini-2.5-flash';
+
 // Shared by api/cron.js so the daily job reuses the exact same logic.
 export async function runRefresh() {
-  const res = await fetch('https://api.openai.com/v1/responses', {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${process.env.GEMINI_API_KEY}`;
+  const res = await fetch(url, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: 'gpt-4o',
-      tools: [{ type: 'web_search_preview' }],
-      input: LIVE_PROMPT,
+      contents: [{ role: 'user', parts: [{ text: LIVE_PROMPT }] }],
+      tools: [{ google_search: {} }],
     }),
   });
 
   if (!res.ok) {
     const errText = await res.text().catch(() => '');
-    throw new Error(`OpenAI ${res.status}: ${errText.slice(0, 300)}`);
+    throw new Error(`Gemini ${res.status}: ${errText.slice(0, 300)}`);
   }
 
   const payload = await res.json();
 
-  // The Responses API returns an `output` array; pull the assistant text out.
+  // Gemini returns candidates[].content.parts[].text
   let rawText = '';
-  if (typeof payload.output_text === 'string') {
-    rawText = payload.output_text;
-  } else if (Array.isArray(payload.output)) {
-    rawText = payload.output
-      .filter((b) => b.type === 'message')
-      .flatMap((b) => b.content || [])
-      .filter((c) => c.type === 'output_text')
-      .map((c) => c.text)
-      .join('');
+  const cand = payload.candidates && payload.candidates[0];
+  if (cand && cand.content && Array.isArray(cand.content.parts)) {
+    rawText = cand.content.parts.map((p) => p.text || '').join('');
   }
 
   // Strip any accidental markdown fences, then isolate the JSON object.

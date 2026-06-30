@@ -217,6 +217,13 @@ a{color:inherit;text-decoration:none}
     <div style="background:#FDE8E5;border-radius:4px;padding:10px 12px;border-left:3px solid #C83020"><p style="font-size:9px;color:#A02010;text-transform:uppercase;letter-spacing:.07em;margin:0 0 3px;font-weight:700">OTIF Alert</p><p style="font-size:16px;font-weight:700;font-family:monospace;color:#A02010;margin:0">94.2%</p><p style="font-size:9px;color:#A02010;margin:1px 0 0">Walmart target: 98.5%</p></div>
   </div>
 </div>
+<!-- Compact event-risk strip — populated by the live engine; click to open the radar -->
+<div id="overview-event-strip" class="no-print" style="display:none;align-items:center;gap:14px;flex-wrap:wrap;background:#fff;border:1px solid rgba(40,58,30,.15);border-left:3px solid #7B5EA7;border-radius:4px;padding:11px 16px;margin-bottom:18px;cursor:pointer" onclick="switchTab('signals')">
+  <span style="font-size:10px;font-weight:700;color:#7B5EA7;text-transform:uppercase;letter-spacing:.1em">Event Risk Radar</span>
+  <span id="oes-counts" style="display:flex;gap:8px;flex-wrap:wrap"></span>
+  <span id="oes-top" style="font-size:12px;color:#4A5548;flex:1;min-width:160px"></span>
+  <span style="font-size:10px;font-weight:700;color:#7B5EA7;text-decoration:underline;white-space:nowrap">View radar →</span>
+</div>
 <div class="intel-card">
   <div class="intel-lbl">Intelligence Summary</div>
   <div class="intel-text" id="intel-txt">Reefer TL spot rates are up 8.2% over 30 days to $3.47/mi with load-to-truck ratios at 8.2 -- a critical level -- driven by Q3 produce season competing with Applegate and Hormel refrigerated outbound from Austin MN. Hurricane Beryl is tracking the Gulf Coast with 78% disruption probability posing $2.8-4.2M exposure to refrigerated outbound lanes. Panama Canal remains constrained adding $400-600/FEU on SPAM ingredient imports while ocean FCL has softened 8.3% creating a Q4 ingredient buying window before Asia peak loading begins August 1. OTIF at Walmart is 94.2% vs. the 98.5% target -- in penalty territory -- adding urgency to reefer capacity actions.</div>
@@ -500,16 +507,16 @@ a{color:inherit;text-decoration:none}
 <div id="pane-network" class="tp" style="display:none">
 
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
-  <p class="sec-hdr" style="margin:0">Critical Freight Lanes</p>
+  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><p class="sec-hdr" style="margin:0">Critical Freight Lanes</p><span id="lanes-source" style="display:none;font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;background:#E0EDCC;color:#2E4A20"></span></div>
   <button onclick="exportLanesCSV()" class="no-print" style="font-size:11px;padding:5px 12px;background:#3B5E28;color:#fff;border:none;border-radius:4px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px">&#128190; Download CSV</button>
 </div>
 <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:16px">
-  <div style="background:#FDE8E5;border:1px solid rgba(40,58,30,.15);border-radius:4px;padding:10px 12px"><p style="font-size:9px;font-weight:700;color:#A02010;text-transform:uppercase;letter-spacing:.07em;margin:0 0 3px">Lock Now lanes</p><p style="font-size:22px;font-weight:700;font-family:monospace;color:#A02010;margin:0">5</p><p style="font-size:9px;color:#A02010;margin:1px 0 0">Reefer TL + Cross-Border</p></div>
-  <div style="background:#FEF0E5;border:1px solid rgba(40,58,30,.15);border-radius:4px;padding:10px 12px"><p style="font-size:9px;font-weight:700;color:#B85A18;text-transform:uppercase;letter-spacing:.07em;margin:0 0 3px">Monitor lanes</p><p style="font-size:22px;font-weight:700;font-family:monospace;color:#B85A18;margin:0">2</p><p style="font-size:9px;color:#B85A18;margin:1px 0 0">Dry Van Watch</p></div>
-  <div style="background:#E0EDCC;border:1px solid rgba(40,58,30,.15);border-radius:4px;padding:10px 12px"><p style="font-size:9px;font-weight:700;color:#2E4A20;text-transform:uppercase;letter-spacing:.07em;margin:0 0 3px">Spot Play lanes</p><p style="font-size:22px;font-weight:700;font-family:monospace;color:#2E4A20;margin:0">3</p><p style="font-size:9px;color:#2E4A20;margin:1px 0 0">Ocean FCL + Intermodal</p></div>
-  <div style="background:#FDE8E5;border:1px solid rgba(40,58,30,.15);border-radius:4px;padding:10px 12px"><p style="font-size:9px;font-weight:700;color:#A02010;text-transform:uppercase;letter-spacing:.07em;margin:0 0 3px">OTIF below target</p><p style="font-size:22px;font-weight:700;font-family:monospace;color:#A02010;margin:0">2</p><p style="font-size:9px;color:#A02010;margin:1px 0 0">Walmart + Target</p></div>
+  <div style="background:#FDE8E5;border:1px solid rgba(40,58,30,.15);border-radius:4px;padding:10px 12px"><p style="font-size:9px;font-weight:700;color:#A02010;text-transform:uppercase;letter-spacing:.07em;margin:0 0 3px">Lock Now lanes</p><p id="stat-locknow" style="font-size:22px;font-weight:700;font-family:monospace;color:#A02010;margin:0">5</p><p style="font-size:9px;color:#A02010;margin:1px 0 0">Reefer TL + Cross-Border</p></div>
+  <div style="background:#FEF0E5;border:1px solid rgba(40,58,30,.15);border-radius:4px;padding:10px 12px"><p style="font-size:9px;font-weight:700;color:#B85A18;text-transform:uppercase;letter-spacing:.07em;margin:0 0 3px">Monitor lanes</p><p id="stat-monitor" style="font-size:22px;font-weight:700;font-family:monospace;color:#B85A18;margin:0">2</p><p style="font-size:9px;color:#B85A18;margin:1px 0 0">Dry Van Watch</p></div>
+  <div style="background:#E0EDCC;border:1px solid rgba(40,58,30,.15);border-radius:4px;padding:10px 12px"><p style="font-size:9px;font-weight:700;color:#2E4A20;text-transform:uppercase;letter-spacing:.07em;margin:0 0 3px">Spot Play lanes</p><p id="stat-spot" style="font-size:22px;font-weight:700;font-family:monospace;color:#2E4A20;margin:0">3</p><p style="font-size:9px;color:#2E4A20;margin:1px 0 0">Ocean FCL + Intermodal</p></div>
+  <div style="background:#FDE8E5;border:1px solid rgba(40,58,30,.15);border-radius:4px;padding:10px 12px"><p style="font-size:9px;font-weight:700;color:#A02010;text-transform:uppercase;letter-spacing:.07em;margin:0 0 3px">OTIF below target</p><p id="stat-otifbelow" style="font-size:22px;font-weight:700;font-family:monospace;color:#A02010;margin:0">2</p><p style="font-size:9px;color:#A02010;margin:1px 0 0">Walmart + Target</p></div>
 </div>
-<div class="rt-tbl">
+<div class="rt-tbl" id="lanes-tbl">
   <div class="rt-hdr-row">
     <div class="rt-hc">Hormel Lane</div>
     <div class="rt-hc">Mode</div>
@@ -882,7 +889,29 @@ a{color:inherit;text-decoration:none}
   <div class="intel-lbl" style="color:#7B5EA7">Getting the most from the Screener Copilot</div>
   <div class="intel-text">The Copilot knows the live data and the whole dashboard. Ask it open questions and it will point you to the right tab. Try: <em>"Summarize today in 3 bullets,"</em> &nbsp;<em>"Which lanes are most exposed to the reefer crunch?"</em>, &nbsp;<em>"What should I bring to my carrier negotiation this week?"</em>, or &nbsp;<em>"Walk me through the most urgent action and why."</em> It's grounded in dashboard data, but always validate a number against the Sources tab before you commit budget or sign a contract.</div>
 </div>
-<p style="font-size:11px;color:#7A8575;margin:0 0 8px;line-height:1.6">&#128338; Data refreshes automatically every day at noon EST. The header shows the last-updated time and the next refresh. You can force an immediate refresh with <strong>REFRESH NOW</strong>, and export a clean PDF for meetings with the print button.</p>
+<p class="sec-hdr" style="margin-top:4px">Connecting your TMS or data lake</p>
+<div class="intel-card" style="border-left-color:#1A5CA5;margin-bottom:14px">
+  <div class="intel-lbl" style="color:#1A5CA5">Live network lanes from your own systems</div>
+  <div class="intel-text">The <strong>My Network</strong> tab can be driven by your real network instead of the built-in sample lanes. Point a scheduled job in your <strong>TMS</strong> (e.g. Blue Yonder, Oracle OTM, MercuryGate, e2open) — or an ETL from your <strong>data lake</strong> (Snowflake, Databricks, BigQuery, S3) — at the ingestion endpoint below. It posts your top lanes / shipment history on whatever cadence you choose, and the dashboard renders them automatically with a <em>LIVE</em> source badge. The market rates, event radar, and forecasts continue to refresh independently each day.</div>
+</div>
+<div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-radius:4px;padding:14px 16px;margin-bottom:14px">
+  <p style="font-size:11px;font-weight:700;color:#1A2816;margin:0 0 8px">POST <code style="background:#F0F1E8;padding:1px 5px;border-radius:3px">/api/lanes</code> &nbsp;<span style="font-size:10px;color:#7A8575;font-weight:400">— Authorization: Bearer &lt;REFRESH_SECRET&gt;</span></p>
+  <pre style="background:#1A2816;color:#D8E0CE;font-size:11px;line-height:1.5;padding:12px 14px;border-radius:4px;overflow-x:auto;margin:0;font-family:monospace">{
+  "source": "Blue Yonder TMS",
+  "lanes": [
+    {
+      "o": "Austin MN", "d": "Walmart DC Sanger TX",
+      "m": "Reefer TL", "note": "Hormel / Applegate",
+      "s": "$3.82/mi", "c30": 9.2,
+      "lt": "8.6", "otif": "94.2%", "otifTarget": "98.5%",
+      "risk": "HIGH", "action": "Lock Now",
+      "hist": [3.52, 3.55, 3.58, 3.62, 3.67, 3.71, 3.74, 3.79, 3.81, 3.82]
+    }
+  ]
+}</pre>
+  <p style="font-size:11px;color:#4A5548;margin:8px 0 0;line-height:1.55">Only <code style="background:#F0F1E8;padding:0 3px;border-radius:3px">o</code>, <code style="background:#F0F1E8;padding:0 3px;border-radius:3px">d</code>, <code style="background:#F0F1E8;padding:0 3px;border-radius:3px">m</code> and <code style="background:#F0F1E8;padding:0 3px;border-radius:3px">s</code> are required; the rest enrich the table and the 12-week trend chart. Each POST replaces the full lane set. Retrieve the current set anytime with <code style="background:#F0F1E8;padding:0 3px;border-radius:3px">GET /api/lanes</code>. Need a different shape, a streaming connector, or a pull-based sync from your warehouse instead of push? That's a straightforward extension &mdash; ask your admin to wire the mapping in the data layer.</p>
+</div>
+<p style="font-size:11px;color:#7A8575;margin:0 0 8px;line-height:1.6">&#128338; Market data &amp; the event-driven forecasts refresh automatically every day at noon EST via Gemini with live web grounding. The header shows the last-updated time and the next refresh. You can force an immediate refresh with <strong>REFRESH NOW</strong>, and export a clean PDF for meetings with the print button.</p>
 </div>
 <div class="ftr"><p>&copy; Hormel Foods Corporation &nbsp;&middot;&nbsp; Transportation Cost Intelligence &nbsp;&middot;&nbsp; CPG Freight Market Signals &nbsp;&middot;&nbsp; Daily data refresh at noon EST via OpenAI</p></div>
 
@@ -1116,6 +1145,8 @@ function loadData(manual) {
         document.getElementById('last-upd').textContent='Awaiting first refresh';
         document.getElementById('next-ref').textContent='noon EST';
       }
+      // Lanes come from the TMS / data-lake feed and render independently of the market refresh
+      if(resp.lanes && resp.lanes.lanes && resp.lanes.lanes.length) renderLanesTable(resp.lanes);
     })
     .catch(function(){
       if(manual) showErr('Could not load data. Try again shortly.');
@@ -1170,7 +1201,23 @@ function dirStyle(dir,sev){
   if(dir==='tailwind') return {bar:'#3B5E28',bg:'#E0EDCC',fg:'#2E4A20',sym:'▼',word:'TAILWIND'};
   return {bar:'#888780',bg:'#EEF0E6',fg:'#5A6355',sym:'―',word:'NEUTRAL'};
 }
+function renderOverviewEventStrip(events){
+  var strip=document.getElementById('overview-event-strip');
+  if(!strip) return;
+  if(!Array.isArray(events)||!events.length){strip.style.display='none';return;}
+  var hw=events.filter(function(e){return e.direction==='headwind';}).length;
+  var tw=events.filter(function(e){return e.direction==='tailwind';}).length;
+  var counts=document.getElementById('oes-counts');
+  counts.innerHTML='<span style="font-size:11px;font-weight:700;color:#1A2816">'+events.length+' active</span>'
+    +(hw?'<span class="delta-badge delta-up">▲ '+hw+' headwind'+(hw>1?'s':'')+'</span>':'')
+    +(tw?'<span class="delta-badge delta-dn">▼ '+tw+' tailwind'+(tw>1?'s':'')+'</span>':'');
+  // Lead with the highest-severity headwind, else the first event
+  var lead=events.filter(function(e){return e.severity==='high';})[0]||events[0];
+  document.getElementById('oes-top').textContent=lead?('Top: '+lead.title):'';
+  strip.style.display='flex';
+}
 function renderEventRadar(events){
+  renderOverviewEventStrip(events);
   var wrap=document.getElementById('event-radar-wrap');
   var grid=document.getElementById('event-radar');
   if(!wrap||!grid) return;
@@ -1206,6 +1253,61 @@ function applyForecasts(forecasts){
   var fp=document.getElementById('pane-forecast');
   if(fp && fp.style.display!=='none') renderFcChart(currentFcMode);
 }
+
+function riskStyle(r){
+  r=String(r||'').toUpperCase();
+  if(r==='HIGH') return {bg:'#FDE8E5',fg:'#A02010'};
+  if(r==='WATCH') return {bg:'#FEF0E5',fg:'#B85A18'};
+  if(r==='EASING') return {bg:'#E0EDCC',fg:'#2E4A20'};
+  return {bg:'#EEF0E6',fg:'#5A6355'};
+}
+// Render the My Network table from a live TMS/data-lake feed (record = {lanes, source, updated_at})
+function renderLanesTable(record){
+  var lanes=record.lanes;
+  var tbl=document.getElementById('lanes-tbl');
+  if(!tbl||!lanes) return;
+  LANES_DATA=lanes; // so the expand-chart and CSV use live data
+
+  // Remove existing data rows, keep the header row
+  tbl.querySelectorAll('.lane-row').forEach(function(r){r.remove();});
+
+  lanes.forEach(function(l){
+    var hasHist=Array.isArray(l.hist)&&l.hist.length>1;
+    var dCol=l.c30>=0?'#C83020':'#3B5E28', dSym=l.c30>=0?'&#9650;':'&#9660;';
+    var rs=riskStyle(l.risk);
+    var row=document.createElement('div');
+    row.className='lane-row'; row.setAttribute('data-id',l.id);
+    if(hasHist){row.style.cursor='pointer';row.onclick=function(){toggleLane(l.id);};}
+    else{row.style.cursor='default';}
+    var otifHtml;
+    if(l.otif){
+      otifHtml='<span style="font-size:10px;font-family:monospace;font-weight:700">'+escHtml(l.otif)+'</span>';
+      if(l.otifTarget) otifHtml+='<span style="font-size:9px;color:#7A8575">/'+escHtml(l.otifTarget)+'</span>';
+    } else {
+      otifHtml='<span style="font-size:10px;color:#7A8575">&mdash;</span>';
+    }
+    row.innerHTML=
+      '<div class="rt-dc"><p style="font-weight:700;font-size:11px;margin:0 0 1px">'+escHtml(l.o)+' &rarr; '+escHtml(l.d)+'</p><p style="font-size:9px;color:#7A8575;margin:0">'+escHtml(l.note)+'</p></div>'
+      +'<div class="rt-dc" style="font-size:11px;color:#4A5548">'+escHtml(l.m)+'</div>'
+      +'<div class="rt-dc" style="font-family:monospace;font-size:12px;font-weight:700">'+escHtml(l.s)+'</div>'
+      +'<div class="rt-dc" style="font-family:monospace;font-size:12px;font-weight:700;color:'+dCol+'">'+dSym+Math.abs(l.c30).toFixed(1)+'%</div>'
+      +'<div class="rt-dc"><span style="font-family:monospace;font-size:11px">'+escHtml(l.lt||'—')+'</span></div>'
+      +'<div class="rt-dc">'+otifHtml+'</div>'
+      +'<div class="rt-dc">'+(l.risk?'<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;background:'+rs.bg+';color:'+rs.fg+'">'+escHtml(l.risk)+'</span>':'')+'</div>'
+      +'<div class="rt-dc" style="border-right:none">'+(l.action?'<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;background:'+rs.bg+';color:'+rs.fg+'">'+escHtml(l.action.toUpperCase())+'</span>':'')+'</div>';
+    tbl.appendChild(row);
+  });
+
+  // Source badge + recompute the four summary tiles
+  var badge=document.getElementById('lanes-source');
+  if(badge){badge.style.display='inline-block';badge.textContent='LIVE · '+(record.source||'TMS')+(record.updated_at?' · '+fmtTs(record.updated_at):'');}
+  var lock=lanes.filter(function(l){return /lock/i.test(l.action||'');}).length;
+  var mon=lanes.filter(function(l){return /monitor|watch/i.test((l.action||'')+' '+(l.risk||''));}).length;
+  var spot=lanes.filter(function(l){return /spot/i.test(l.action||'');}).length;
+  var otb=lanes.filter(function(l){var a=parseFloat(l.otif),t=parseFloat(l.otifTarget);return !isNaN(a)&&!isNaN(t)&&a<t;}).length;
+  setText('stat-locknow',lock); setText('stat-monitor',mon); setText('stat-spot',spot); setText('stat-otifbelow',otb);
+}
+function setText(id,v){var el=document.getElementById(id); if(el) el.textContent=v;}
 
 function showDelta(id, cur, prv, prefix, suffix) {
   var el=document.getElementById(id); if(!el||cur==null||prv==null) return;
@@ -1271,9 +1373,9 @@ function updateActionCounter(){
 
 // ── CSV export for lanes table ──────────────────────────────────────────────
 function exportLanesCSV(){
-  var rows=[['Origin','Destination','Mode','Commodity','Spot Rate','30D Change %']];
+  var rows=[['Origin','Destination','Mode','Commodity','Spot Rate','30D Change %','L:T','OTIF','OTIF Target','Risk','Action']];
   LANES_DATA.forEach(function(l){
-    rows.push([l.o,l.d,l.m,l.note,l.s,(l.c30>0?'+':'')+l.c30+'%']);
+    rows.push([l.o,l.d,l.m,l.note,l.s,(l.c30>0?'+':'')+l.c30+'%',l.lt||'',l.otif||'',l.otifTarget||'',l.risk||'',l.action||'']);
   });
   var csv=rows.map(function(r){return r.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"';}).join(',');}).join('\n');
   var a=document.createElement('a');
