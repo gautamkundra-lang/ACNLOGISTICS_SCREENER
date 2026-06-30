@@ -968,6 +968,7 @@ function setModeF(m) {
     b.className=b.className.replace(' ag','').replace('ag ','');
   });
   var e=document.getElementById('tm-'+m); if(e) e.className+=' ag';
+  switchTab('signals'); // these filters act on the Market Signals view
   filterSigs();
 }
 function setRiskF(r) {
@@ -977,6 +978,7 @@ function setRiskF(r) {
   });
   var map={'ALL':'tr-ALL','HIGH RISK':'tr-HIGH','WATCH':'tr-WATCH','EASING':'tr-EASE'};
   var e=document.getElementById(map[r]); if(e) e.className+=' ao';
+  switchTab('signals');
   filterSigs();
 }
 function setDirF(d) {
@@ -987,16 +989,42 @@ function setDirF(d) {
   var e=document.getElementById('td-'+d); if(e) e.className+=' sa';
   filterSigs();
 }
+function matchF(modes,risk,dir){
+  var mOk=modeF==='ALL'||(modes||'').toUpperCase().indexOf(modeF)>=0;
+  var rOk=riskF==='ALL'||(risk||'').toUpperCase()===riskF;
+  var dOk=dirF==='ALL'||(dir||'').toUpperCase()===dirF;
+  return mOk&&rOk&&dOk;
+}
 function filterSigs() {
-  document.querySelectorAll('.sig-card').forEach(function(card) {
-    var modes=card.getAttribute('data-modes')||'';
-    var risk=card.getAttribute('data-risk')||'';
-    var dir=card.getAttribute('data-dir')||'';
-    var mOk=modeF==='ALL'||modes.indexOf(modeF)>=0;
-    var rOk=riskF==='ALL'||risk===riskF;
-    var dOk=dirF==='ALL'||dir===dirF;
-    card.style.display=(mOk&&rOk&&dOk)?'flex':'none';
+  var any=false;
+  document.querySelectorAll('.sig-card').forEach(function(card){
+    var ok=matchF(card.getAttribute('data-modes'),card.getAttribute('data-risk'),card.getAttribute('data-dir'));
+    card.style.display=ok?'flex':'none'; if(ok) any=true;
   });
+  document.querySelectorAll('.event-card').forEach(function(card){
+    var ok=matchF(card.getAttribute('data-modes'),card.getAttribute('data-risk'),card.getAttribute('data-dir'));
+    card.style.display=ok?'':'none'; if(ok) any=true;
+  });
+  // Empty-state message so a filter never just shows a blank pane
+  var pane=document.getElementById('pane-signals');
+  var empty=document.getElementById('signals-empty');
+  if(pane && !empty){
+    empty=document.createElement('div');
+    empty.id='signals-empty';
+    empty.style.cssText='display:none;background:#fff;border:1px dashed rgba(40,58,30,.3);border-radius:4px;padding:22px;text-align:center;color:#7A8575;font-size:13px;margin-top:10px';
+    pane.appendChild(empty);
+  }
+  if(empty){
+    if(any){ empty.style.display='none'; }
+    else{
+      var parts=[];
+      if(modeF!=='ALL') parts.push(modeF);
+      if(riskF!=='ALL') parts.push(riskF);
+      if(dirF!=='ALL') parts.push(dirF);
+      empty.textContent='No market signals match '+(parts.length?parts.join(' · '):'the current filters')+'. Tap “All” to clear.';
+      empty.style.display='block';
+    }
+  }
 }
 
 function toggleLane(id) {
@@ -1226,7 +1254,11 @@ function renderEventRadar(events){
     var cat=EVENT_CAT[e.category]||{label:e.category||'Event',icon:'•'};
     var s=dirStyle(e.direction,e.severity);
     var modes=(Array.isArray(e.modes)?e.modes:[]).map(function(m){return '<span style="font-size:9px;padding:1px 6px;background:#EEF0E6;color:#5A6355;border-radius:3px">'+escHtml(m)+'</span>';}).join(' ');
-    return '<div style="background:#fff;border:1px solid rgba(40,58,30,.15);border-left:3px solid '+s.bar+';border-radius:4px;padding:12px 14px">'
+    var sev=String(e.severity||'').toLowerCase();
+    var riskAttr=sev==='high'?'HIGH RISK':sev==='watch'?'WATCH':sev==='easing'?'EASING':'';
+    var modesAttr=(Array.isArray(e.modes)?e.modes:[]).join(' ').toUpperCase();
+    var dirAttr=String(e.direction||'').toUpperCase();
+    return '<div class="event-card" data-modes="'+escHtml(modesAttr)+'" data-risk="'+riskAttr+'" data-dir="'+dirAttr+'" style="background:#fff;border:1px solid rgba(40,58,30,.15);border-left:3px solid '+s.bar+';border-radius:4px;padding:12px 14px">'
       +'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px">'
       +'<span style="font-size:10px;font-weight:700;color:#7A8575;text-transform:uppercase;letter-spacing:.06em">'+cat.icon+' '+escHtml(cat.label)+'</span>'
       +'<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;background:'+s.bg+';color:'+s.fg+'">'+s.sym+' '+s.word+(e.severity?' · '+escHtml(String(e.severity).toUpperCase()):'')+'</span></div>'
@@ -1237,6 +1269,7 @@ function renderEventRadar(events){
       +'<span style="font-size:10px;color:#7A8575">'+(e.horizon?escHtml(e.horizon)+' · ':'')+escHtml(e.source||'')+'</span></div></div>';
   }).join('');
   wrap.style.display='block';
+  filterSigs(); // honor any active mode/risk/direction filter
 }
 function applyForecasts(forecasts){
   if(!forecasts) return;
