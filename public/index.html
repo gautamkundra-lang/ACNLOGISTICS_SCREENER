@@ -53,7 +53,7 @@ a{color:inherit;text-decoration:none}
 .sigs-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
 .sig-card.hidden{display:none}
 .factors-box{background:#fff;border:1px solid rgba(40,58,30,.15);border-radius:4px;overflow:hidden;margin-bottom:20px}
-.htci-card{background:#fff;border:1px solid rgba(40,58,30,.15);border-left:3px solid #3B5E28;border-radius:4px;padding:14px 18px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.ctci-card{background:#fff;border:1px solid rgba(40,58,30,.15);border-left:3px solid #3B5E28;border-radius:4px;padding:14px 18px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .rt-tbl{width:100%;background:#fff;border:1px solid rgba(40,58,30,.15);border-radius:4px;overflow:hidden;margin-bottom:8px}
 .rt-hdr-row{display:grid;grid-template-columns:2.2fr 1.1fr 1fr .75fr .7fr 1fr .85fr .85fr;background:#F0F1E8;border-bottom:1px solid rgba(40,58,30,.15)}
 .lane-row{display:grid;grid-template-columns:2.2fr 1.1fr 1fr .75fr .7fr 1fr .85fr .85fr;border-bottom:1px solid rgba(40,58,30,.1);cursor:pointer;align-items:center}
@@ -201,7 +201,7 @@ a{color:inherit;text-decoration:none}
 </div>
 <div id="pane-overview" class="tp" style="display:block">
 
-<div class="htci-card">
+<div class="ctci-card">
   <div>
     <div style="font-size:10px;font-weight:700;color:#3B5E28;text-transform:uppercase;letter-spacing:.12em;margin-bottom:5px">CPG Transportation Cost Index (CTCI)</div>
     <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
@@ -1380,7 +1380,7 @@ function exportLanesCSV(){
   var csv=rows.map(function(r){return r.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"';}).join(',');}).join('\n');
   var a=document.createElement('a');
   a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
-  a.download='hormel-lanes-'+new Date().toISOString().slice(0,10)+'.csv';
+  a.download='cpg-lanes-'+new Date().toISOString().slice(0,10)+'.csv';
   document.body.appendChild(a);a.click();document.body.removeChild(a);
 }
 
