@@ -1,6 +1,8 @@
 import { kv } from '@vercel/kv';
 
-export const config = { runtime: 'edge' };
+// Node serverless runtime (not edge): the grounded generation can take 30-50s,
+// which exceeds the edge response limit. Node on Hobby allows up to 60s.
+export const config = { maxDuration: 60 };
 
 const LIVE_PROMPT = `You are the data engine for a freight market screener used by the Hormel Foods transportation & procurement team. Search the web for CURRENT information (use live sources: DAT Freight, FreightWaves, EIA, Drewry, Freightos, plus reputable news for events) and return a single structured JSON object.
 
@@ -70,6 +72,11 @@ export async function runRefresh() {
     body: JSON.stringify({
       contents: [{ role: 'user', parts: [{ text: LIVE_PROMPT }] }],
       tools: [{ google_search: {} }],
+      generationConfig: {
+        temperature: 0.3,
+        // Skip extended "thinking" to keep the daily job well under the 60s limit
+        thinkingConfig: { thinkingBudget: 0 },
+      },
     }),
   });
 
@@ -103,34 +110,22 @@ export async function runRefresh() {
   return data;
 }
 
-export default async function handler(req) {
+export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method Not Allowed' }), {
-      status: 405,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  const auth = req.headers.get('authorization') || '';
+  const auth = req.headers['authorization'] || '';
   const token = auth.replace('Bearer ', '').trim();
   if (token !== process.env.REFRESH_SECRET) {
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-      status: 401,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return res.status(401).json({ error: 'Unauthorized' });
   }
 
   try {
     const data = await runRefresh();
-    return new Response(JSON.stringify({ status: 'ok', data }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return res.status(200).json({ status: 'ok', data });
   } catch (err) {
     console.error('api/refresh error:', err);
-    return new Response(JSON.stringify({ status: 'error', message: String(err.message || err) }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return res.status(500).json({ status: 'error', message: String(err.message || err) });
   }
 }

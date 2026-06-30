@@ -2,32 +2,24 @@
 // Vercel sends Authorization: Bearer ${CRON_SECRET} automatically.
 import { runRefresh } from './refresh.js';
 
-export const config = { runtime: 'edge' };
+// Node serverless runtime with extended duration (the grounded refresh is slow).
+export const config = { maxDuration: 60 };
 
-export default async function handler(req) {
-  const auth = req.headers.get('authorization') || '';
+export default async function handler(req, res) {
+  const auth = req.headers['authorization'] || '';
   // CRON_SECRET is auto-injected by Vercel for cron invocations. If unset
   // (e.g. local testing), fall back to REFRESH_SECRET.
   const expected = process.env.CRON_SECRET || process.env.REFRESH_SECRET;
   if (expected && auth !== `Bearer ${expected}`) {
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-      status: 401,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return res.status(401).json({ error: 'Unauthorized' });
   }
 
   try {
     await runRefresh();
     console.log(`[cron] refresh complete at ${new Date().toISOString()}`);
-    return new Response(JSON.stringify({ status: 'cron_complete' }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return res.status(200).json({ status: 'cron_complete' });
   } catch (err) {
     console.error('[cron] refresh failed:', err);
-    return new Response(JSON.stringify({ status: 'error', message: String(err.message || err) }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return res.status(500).json({ status: 'error', message: String(err.message || err) });
   }
 }
