@@ -112,14 +112,62 @@ async function parseOrRepair(rawText) {
   }
 }
 
+// ── Forecast feedback loop ──────────────────────────────────────────────────
+// Modes for which the live data carries an actual current rate we can score.
+const TRACK = [
+  { id: 'reefer', field: 'reefer', key: 'rate' },
+  { id: 'dryvan', field: 'dryvan', key: 'rate' },
+  { id: 'ocean', field: 'ocean_sh_la', key: 'rate' },
+  { id: 'ltl', field: 'ltl', key: 'rate' },
+];
+function actualRate(d, t) {
+  return d && d[t.field] && typeof d[t.field][t.key] === 'number' ? d[t.field][t.key] : null;
+}
+function predBase(d, id) {
+  return d && d.forecasts && d.forecasts[id] && typeof d.forecasts[id].base === 'number'
+    ? d.forecasts[id].base : null;
+}
+// Score the previous run's predicted direction against what actually happened.
+function updateAccuracy(acc, prevData, data) {
+  if (!prevData) return;
+  TRACK.forEach((t) => {
+    const prevRate = actualRate(prevData, t);
+    const prevPred = predBase(prevData, t.id);
+    const nowRate = actualRate(data, t);
+    if (prevRate == null || prevPred == null || nowRate == null || !prevRate) return;
+    const predDir = Math.sign(prevPred - prevRate);
+    const actDir = Math.sign(nowRate - prevRate);
+    const flat = Math.abs(nowRate - prevRate) / prevRate < 0.003;
+    const a = acc[t.id] || { hits: 0, total: 0 };
+    a.total += 1;
+    if (flat || predDir === actDir) a.hits += 1;
+    acc[t.id] = a;
+  });
+}
+// Turn the accuracy record into a calibration instruction fed back to the model.
+function buildCalibration(acc) {
+  const parts = [];
+  Object.keys(acc || {}).forEach((id) => {
+    const a = acc[id];
+    if (a && a.total >= 3) parts.push(`${id} ${Math.round((a.hits / a.total) * 100)}% over ${a.total} calls`);
+  });
+  if (!parts.length) return '';
+  return `\n\nFORECAST CALIBRATION — your recent directional hit-rate by mode: ${parts.join('; ')}. For modes where your hit-rate is low, reconsider the direction and widen the bull/bear band; for high hit-rate modes, keep your current approach.`;
+}
+
 // Shared by api/cron.js so the daily job reuses the exact same logic.
 export async function runRefresh() {
+  // Read prior snapshot + accuracy first so we can feed calibration back in.
+  const prevData = await kv.get('cpg:latest');
+  const accuracy = (await kv.get('cpg:accuracy')) || {};
+  const calibration = buildCalibration(accuracy);
+
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${process.env.GEMINI_API_KEY}`;
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      contents: [{ role: 'user', parts: [{ text: LIVE_PROMPT }] }],
+      contents: [{ role: 'user', parts: [{ text: LIVE_PROMPT + calibration }] }],
       tools: [{ google_search: {} }],
       generationConfig: {
         temperature: 0.3,
@@ -135,8 +183,6 @@ export async function runRefresh() {
   }
 
   const payload = await res.json();
-
-  // Gemini returns candidates[].content.parts[].text
   let rawText = '';
   const cand = payload.candidates && payload.candidates[0];
   if (cand && cand.content && Array.isArray(cand.content.parts)) {
@@ -146,11 +192,22 @@ export async function runRefresh() {
   const data = await parseOrRepair(rawText);
   data.fetched_at = data.fetched_at || new Date().toISOString();
 
-  // Archive the previous snapshot for day-over-day deltas, then store latest.
-  const prev = await kv.get('cpg:latest');
-  if (prev) await kv.set('cpg:previous', prev);
-  await kv.set('cpg:latest', data);
+  // Feedback loop: score the previous prediction, append to history.
+  updateAccuracy(accuracy, prevData, data);
+  let history = (await kv.get('cpg:history')) || [];
+  const snap = { date: data.fetched_at, modes: {} };
+  TRACK.forEach((t) => { snap.modes[t.id] = { rate: actualRate(data, t), base: predBase(data, t.id) }; });
+  history.push(snap);
+  if (history.length > 120) history = history.slice(-120);
 
+  // Persist everything.
+  if (prevData) await kv.set('cpg:previous', prevData);
+  await kv.set('cpg:latest', data);
+  await kv.set('cpg:accuracy', accuracy);
+  await kv.set('cpg:history', history);
+
+  // Attach accuracy to the returned object so callers/UI can use it immediately.
+  data._accuracy = accuracy;
   return data;
 }
 

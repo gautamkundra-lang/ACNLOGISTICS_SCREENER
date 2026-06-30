@@ -8,10 +8,11 @@ export default async function handler(req) {
   }
 
   try {
-    const [current, previous, lanes] = await Promise.all([
+    const [current, previous, lanes, accuracy] = await Promise.all([
       kv.get('cpg:latest'),
       kv.get('cpg:previous'),
       kv.get('cpg:lanes'),
+      kv.get('cpg:accuracy'),
     ]);
 
     // Lanes can be present (from the TMS feed) even before the first market refresh.
@@ -29,7 +30,7 @@ export default async function handler(req) {
     if (next <= now) next.setUTCDate(next.getUTCDate() + 1);
 
     return new Response(
-      JSON.stringify({ status: 'ok', current, previous: previous || null, lanes: lanes || null, next_refresh_utc: next.toISOString() }),
+      JSON.stringify({ status: 'ok', current, previous: previous || null, lanes: lanes || null, accuracy: accuracy || null, next_refresh_utc: next.toISOString() }),
       {
         status: 200,
         headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
