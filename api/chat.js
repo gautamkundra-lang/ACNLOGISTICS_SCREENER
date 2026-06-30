@@ -45,7 +45,7 @@ export default async function handler(req) {
   // Ground the copilot in the latest live data
   let liveData = null;
   try {
-    liveData = await kv.get('hormel:latest');
+    liveData = await kv.get('cpg:latest');
   } catch (e) {
     console.error('kv.get failed:', e);
   }

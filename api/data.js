@@ -9,9 +9,9 @@ export default async function handler(req) {
 
   try {
     const [current, previous, lanes] = await Promise.all([
-      kv.get('hormel:latest'),
-      kv.get('hormel:previous'),
-      kv.get('hormel:lanes'),
+      kv.get('cpg:latest'),
+      kv.get('cpg:previous'),
+      kv.get('cpg:lanes'),
     ]);
 
     // Lanes can be present (from the TMS feed) even before the first market refresh.

@@ -12,10 +12,10 @@ export const config = { runtime: 'edge' };
 // Lane schema (only o/d/m/s are required; the rest enrich the table & chart):
 //   {
 //     "id": 1,                       // optional, auto-assigned if missing
-//     "o": "Austin MN",             // origin
-//     "d": "Walmart DC Sanger TX",  // destination
+//     "o": "Plant A (MN)",             // origin
+//     "d": "Mass Retailer DC Sanger TX",  // destination
 //     "m": "Reefer TL",             // mode
-//     "note": "Hormel / Applegate", // commodity / program
+//     "note": "CPG Foods / Organic Deli", // commodity / program
 //     "s": "$3.82/mi",              // current spot rate (display string)
 //     "c30": 9.2,                    // 30-day % change
 //     "lt": "8.6",                  // load-to-truck ratio (optional)
@@ -34,7 +34,7 @@ const MAX_LANES = 200;
 export default async function handler(req) {
   if (req.method === 'GET') {
     try {
-      const payload = (await kv.get('hormel:lanes')) || null;
+      const payload = (await kv.get('cpg:lanes')) || null;
       return json({ status: payload ? 'ok' : 'no_data', ...(payload || {}) });
     } catch (err) {
       return json({ status: 'error', message: String(err.message || err) }, 500);
@@ -85,7 +85,7 @@ export default async function handler(req) {
   };
 
   try {
-    await kv.set('hormel:lanes', record);
+    await kv.set('cpg:lanes', record);
     return json({ status: 'ok', count: clean.length, source: record.source });
   } catch (err) {
     return json({ status: 'error', message: String(err.message || err) }, 500);

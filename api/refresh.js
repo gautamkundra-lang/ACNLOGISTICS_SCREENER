@@ -4,7 +4,7 @@ import { kv } from '@vercel/kv';
 // which exceeds the edge response limit. Node on Hobby allows up to 60s.
 export const config = { maxDuration: 60 };
 
-const LIVE_PROMPT = `You are the data engine for a freight market screener used by the Hormel Foods transportation & procurement team. Search the web for CURRENT information (use live sources: DAT Freight, FreightWaves, EIA, Drewry, Freightos, plus reputable news for events) and return a single structured JSON object.
+const LIVE_PROMPT = `You are the data engine for a freight market screener used by the CPG Foods transportation & procurement team. Search the web for CURRENT information (use live sources: DAT Freight, FreightWaves, EIA, Drewry, Freightos, plus reputable news for events) and return a single structured JSON object.
 
 PART A — CURRENT RATES:
 1. DAT reefer TL national average spot rate ($/mile) and 30-day % change
@@ -25,7 +25,7 @@ PART B — EVENT RISK SCAN (this is critical): actively search for CURRENT and d
 
 PART C — RATE OUTLOOK that INCORPORATES the Part B events. For EACH mode (reefer, dryvan, ltl, imdl, ocean, air, rail, parcel) give a 30-day forecast as base/bull(rates fall, favorable)/bear(rates rise, unfavorable) numbers in that mode's native unit, and list the specific event drivers behind the outlook. Use your knowledge of historical freight-rate seasonality and typical patterns (e.g. produce season reefer tightening, Q4 holiday peak, Lunar New Year ocean slack) TOGETHER with the current events found via search to set realistic bull/base/bear levels — do not just echo the current rate. Each forecast's "drivers" must cite concrete reasons (seasonal pattern AND/OR a specific Part B event).
 
-Then write a 2–3 sentence Hormel-specific intelligence summary covering rate direction, the most important active event(s), and the single most important action to take today.
+Then write a 2–3 sentence CPG Foods-specific intelligence summary covering rate direction, the most important active event(s), and the single most important action to take today.
 
 Return ONLY valid JSON, no markdown fences, this exact shape (units: reefer/dryvan/imdl/rail $/mi, ltl $/cwt, ocean/air per FEU or $/kg, parcel $/pkg — match the dashboard):
 {
@@ -39,7 +39,7 @@ Return ONLY valid JSON, no markdown fences, this exact shape (units: reefer/dryv
   "events": [
     { "category": "geopolitical|labor|weather|infrastructure|fuel_energy|regulatory",
       "title": "short headline",
-      "summary": "1-2 sentences on what is happening and the Hormel-relevant impact",
+      "summary": "1-2 sentences on what is happening and the CPG Foods-relevant impact",
       "modes": ["reefer","ocean"],
       "direction": "headwind|tailwind|neutral",
       "severity": "high|watch|easing",
@@ -57,7 +57,7 @@ Return ONLY valid JSON, no markdown fences, this exact shape (units: reefer/dryv
     "parcel": { "base": 8.88, "bull": 8.72, "bear": 9.08, "drivers": ["..."] }
   },
   "disruptions": ["brief description of each active disruption"],
-  "intel_summary": "2-3 sentence Hormel-specific market intelligence summary",
+  "intel_summary": "2-3 sentence CPG Foods-specific market intelligence summary",
   "fetched_at": "ISO datetime"
 }`;
 
@@ -103,9 +103,9 @@ export async function runRefresh() {
   data.fetched_at = data.fetched_at || new Date().toISOString();
 
   // Archive the previous snapshot for day-over-day deltas, then store latest.
-  const prev = await kv.get('hormel:latest');
-  if (prev) await kv.set('hormel:previous', prev);
-  await kv.set('hormel:latest', data);
+  const prev = await kv.get('cpg:latest');
+  if (prev) await kv.set('cpg:previous', prev);
+  await kv.set('cpg:latest', data);
 
   return data;
 }
