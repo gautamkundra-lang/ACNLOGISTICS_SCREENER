@@ -49,7 +49,8 @@ Return ONLY strict, valid JSON — no markdown fences, no comments, no trailing 
       "direction": "headwind|tailwind|neutral",
       "severity": "high|watch|easing",
       "horizon": "e.g. 48-72 hrs / 30 days",
-      "source": "source name" }
+      "source": "source name",
+      "source_url": "https direct link to the article/source you used for this event" }
   ],
   "forecasts": {
     "reefer": { "base": 3.65, "bull": 3.52, "bear": 3.92, "confidence": "medium",

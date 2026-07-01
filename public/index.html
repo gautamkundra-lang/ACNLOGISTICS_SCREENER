@@ -962,10 +962,10 @@ a{color:inherit;text-decoration:none}
   <div class="cp-body" id="cp-body">
     <div class="cp-msg bot">Hi — I'm your freight market copilot. I can explain the current rates, summarize what matters, recommend actions, and point you to the right tab. What would you like to know?</div>
     <div class="cp-starters" id="cp-starters">
-      <button class="cp-starter" onclick="cpAsk(this.textContent)">What are the most urgent actions I should take today?</button>
-      <button class="cp-starter" onclick="cpAsk(this.textContent)">Why is the reefer market tightening and how exposed are we?</button>
-      <button class="cp-starter" onclick="cpAsk(this.textContent)">Summarize today's market in 3 bullets.</button>
-      <button class="cp-starter" onclick="cpAsk(this.textContent)">Where should I focus to protect Mass Retailer OTIF?</button>
+      <button class="cp-starter" onclick="cpAsk(this.textContent)">What changed since the last refresh, and what should I do about it?</button>
+      <button class="cp-starter" onclick="cpAsk(this.textContent)">Which lanes are most exposed right now — should I lock or ride spot?</button>
+      <button class="cp-starter" onclick="cpAsk(this.textContent)">Full reefer assessment: what's happening, why, $ exposure, and the action.</button>
+      <button class="cp-starter" onclick="cpAsk(this.textContent)">How accurate have your forecasts been, and where shouldn't I trust them?</button>
     </div>
   </div>
   <div class="cp-foot">
@@ -1485,6 +1485,30 @@ function renderOverviewEventStrip(events){
   document.getElementById('oes-top').textContent=lead?('Top: '+lead.title):'';
   strip.style.display='flex';
 }
+// Clickable source for an event: use the model's source_url if it's a real
+// link, otherwise fall back to a web search so the user can always find it.
+function eventSourceLink(e){
+  if(!e.source && !e.source_url) return '';
+  var label=escHtml(e.source||'Source');
+  var url=(e.source_url && /^https?:\/\//i.test(e.source_url))
+    ? e.source_url
+    : 'https://www.google.com/search?q='+encodeURIComponent((e.title||'')+' '+(e.source||'')+' freight');
+  return '<a href="'+escHtml(url)+'" target="_blank" rel="noopener" style="color:#1A5CA5;text-decoration:underline">'+label+' &#8599;</a>';
+}
+// Make the static reference signal-card source names clickable (search fallback).
+function linkifyStaticSources(){
+  document.querySelectorAll('#pane-signals div[style*="gap:6px;color:#4A5548"]').forEach(function(div){
+    if(div.dataset.linked) return; div.dataset.linked='1';
+    var name=div.textContent.trim(); if(!name) return;
+    var svg=div.querySelector('svg');
+    var a=document.createElement('a');
+    a.href='https://www.google.com/search?q='+encodeURIComponent(name+' freight');
+    a.target='_blank'; a.rel='noopener';
+    a.style.cssText='color:#1A5CA5;text-decoration:underline';
+    a.textContent=name;
+    div.innerHTML=''; if(svg) div.appendChild(svg); div.appendChild(a);
+  });
+}
 function renderEventRadar(events){
   renderOverviewEventStrip(events);
   var wrap=document.getElementById('event-radar-wrap');
@@ -1507,7 +1531,7 @@ function renderEventRadar(events){
       +'<p style="font-size:12px;color:#4A5548;margin:0 0 7px;line-height:1.5">'+escHtml(e.summary)+'</p>'
       +'<div style="display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap">'
       +'<div style="display:flex;gap:4px;flex-wrap:wrap">'+modes+'</div>'
-      +'<span style="font-size:10px;color:#7A8575">'+(e.horizon?escHtml(e.horizon)+' · ':'')+escHtml(e.source||'')+'</span></div></div>';
+      +'<span style="font-size:10px;color:#7A8575">'+(e.horizon?escHtml(e.horizon)+' · ':'')+eventSourceLink(e)+'</span></div></div>';
   }).join('');
   wrap.style.display='block';
   filterSigs(); // honor any active mode/risk/direction filter
@@ -1852,6 +1876,7 @@ window.addEventListener('DOMContentLoaded',function(){
 
   // Tag mode cards / lanes / actions so MODE+RISK filters work on every tab
   tagFilterables();
+  linkifyStaticSources();
 
   // Load live data
   loadData(false);
