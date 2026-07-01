@@ -42,10 +42,11 @@ export default async function handler(req) {
     return new Response(JSON.stringify({ error: 'No messages provided' }), { status: 400 });
   }
 
-  // Ground the copilot in the latest live data
+  // Ground the copilot in the latest live data + forecast track record
   let liveData = null;
+  let accuracy = null;
   try {
-    liveData = await kv.get('cpg:latest');
+    [liveData, accuracy] = await Promise.all([kv.get('cpg:latest'), kv.get('cpg:accuracy')]);
   } catch (e) {
     console.error('kv.get failed:', e);
   }
@@ -61,13 +62,13 @@ export default async function handler(req) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      systemInstruction: { parts: [{ text: buildSystemPrompt(liveData) }] },
+      systemInstruction: { parts: [{ text: buildSystemPrompt(liveData, accuracy) }] },
       contents,
       generationConfig: {
         temperature: 0.4,
-        maxOutputTokens: 800,
-        // Disable extended "thinking" for a snappy sidebar chat
-        thinkingConfig: { thinkingBudget: 0 },
+        maxOutputTokens: 1600,
+        // Allow a modest reasoning budget so answers are genuinely analytical
+        thinkingConfig: { thinkingBudget: 1024 },
       },
     }),
   });

@@ -4,12 +4,14 @@
 // from Vercel KV when available.
 
 export const DASHBOARD_TABS = {
-  overview: 'Overview — CTCI cost index, 8 transportation modes, and CPG KPIs',
-  signals: 'Market Signals — 7 active market signal cards (reefer crunch, hurricane, Panama, etc.)',
-  network: 'My Network — 10 critical CPG Foods freight lanes with spot rates and OTIF',
-  actions: 'Action Hub — 7 prioritized recommendations + 6 escalation triggers',
-  forecast: 'Rate Outlook — 12-week trend + 30-day base/bull/bear forecast per mode',
-  sources: 'Sources — 16 live and reference data sources by category',
+  overview: 'Overview — CTCI cost index, live "what changed" briefing, event-risk strip, 8 transportation modes, and CPG KPIs',
+  signals: 'Market Signals — live Event Risk Radar (geopolitical/labor/weather/infrastructure/fuel/regulatory) plus reference signal cards; filterable by mode/risk/direction',
+  network: 'My Network — critical freight lanes with spot rates, L:T, OTIF, risk; expand a lane for its 12-week trend and a forecast-driven lock-vs-ride-spot recommendation. Can be fed live from a TMS/data lake.',
+  actions: 'Action Hub — prioritized recommendations with dollar impact + checklist, and escalation triggers',
+  forecast: 'Rate Outlook — 12-week trend + 30-day base/bull/bear per mode, each with a confidence badge, a track-record badge, per-scenario $ impact, and a "What\'s driving this outlook" driver framework',
+  accuracy: 'Accuracy — forecast track record: per-mode directional hit-rate scorecards and a predicted-vs-actual log; this is the feedback loop that recalibrates the model each day',
+  sources: 'Sources — live and reference data sources by category',
+  howto: 'How to Use — daily/weekly planner workflow guide',
 };
 
 // Baseline figures shown on the dashboard. Live KV data overrides the headline rates.
@@ -58,9 +60,13 @@ ESCALATION TRIGGERS (condition → current → response):
 - Monterrey cross-border >$4,200/load → $3,800 → lock 6-month contract.
 
 DATA SOURCES: DAT, FreightWaves SONAR, ACT Research (truckload); Drewry WCI, Freightos FBX, Xeneta (ocean); DrayNow, IANA, AAR, Cass Index (intermodal/rail/LTL); Freightos FAX, EIA, UPS/FedEx (air/fuel).
+
+MONTHLY SPEND ASSUMPTIONS (illustrative; drive the $ exposure math on Rate Outlook & Overview): reefer $2.4M, dry van $3.1M, LTL $0.9M, intermodal $0.6M, ocean $1.8M, air $0.2M, rail $0.4M, parcel $0.5M. To estimate the dollar impact of a rate move for a mode: ((scenario_rate - current_rate) / current_rate) * that mode's monthly spend.
+
+FORECAST FRAMEWORK: each 30-day outlook carries a confidence level and an 8-driver breakdown (demand, capacity, fuel, seasonality, network, macro, events, market structure), each marked up / down / neutral. The Accuracy tab tracks how prior base-case calls compared to reality (directional hit-rate) and that record is fed back to recalibrate future forecasts.
 `;
 
-function fmtLive(data) {
+function fmtLive(data, accuracy) {
   if (!data) return 'No live refresh data available yet — using baseline figures above.';
   const lines = ['LIVE DATA (most recent daily refresh, overrides baseline where present):'];
   if (data.fetched_at) lines.push(`As of: ${data.fetched_at}`);
@@ -82,39 +88,62 @@ function fmtLive(data) {
   }
 
   if (data.forecasts) {
-    lines.push('30-DAY RATE OUTLOOK (base/bull=rates fall/bear=rates rise, with event drivers):');
+    lines.push('30-DAY RATE OUTLOOK (base / bull=favorable / bear=unfavorable; confidence; driver directions):');
     Object.entries(data.forecasts).forEach(([mode, f]) => {
-      const drivers = Array.isArray(f.drivers) ? f.drivers.join('; ') : '';
-      const conf = f.confidence ? ` (confidence: ${f.confidence})` : '';
-      lines.push(`- ${mode}: base ${f.base}, bull ${f.bull}, bear ${f.bear}${conf}. Drivers: ${drivers}`);
+      const conf = f.confidence ? ` [${f.confidence} confidence]` : '';
+      let sig = '';
+      if (Array.isArray(f.driver_signals) && f.driver_signals.length) {
+        const up = f.driver_signals.filter((s) => s.dir === 'up').map((s) => s.cat);
+        const down = f.driver_signals.filter((s) => s.dir === 'down').map((s) => s.cat);
+        sig = ` | pushing UP: ${up.join(', ') || 'none'}; EASING: ${down.join(', ') || 'none'}`;
+      }
+      const drivers = Array.isArray(f.drivers) && f.drivers.length ? ` | notes: ${f.drivers.join('; ')}` : '';
+      lines.push(`- ${mode}: base ${f.base}, bull ${f.bull}, bear ${f.bear}${conf}${sig}${drivers}`);
     });
+  }
+
+  if (accuracy && Object.keys(accuracy).length) {
+    const parts = [];
+    Object.entries(accuracy).forEach(([id, a]) => {
+      if (a && a.total) parts.push(`${id} ${Math.round((a.hits / a.total) * 100)}% (${a.total} calls)`);
+    });
+    if (parts.length) lines.push(`FORECAST TRACK RECORD — directional hit-rate of prior base-case calls (see the Accuracy tab): ${parts.join('; ')}.`);
   }
 
   if (data.intel_summary) lines.push(`- Intelligence summary: ${data.intel_summary}`);
   return lines.join('\n');
 }
 
-export function buildSystemPrompt(liveData) {
+export function buildSystemPrompt(liveData, accuracy) {
   const tabList = Object.entries(DASHBOARD_TABS)
     .map(([k, v]) => `  #${k} — ${v}`)
     .join('\n');
 
-  return `You are the "Screener Copilot" — an embedded assistant inside the CPG Foods Transportation Cost Intelligence dashboard. You help a supply-chain / procurement user understand the freight market data, interpret the intelligence summary, decide what actions to take, and navigate the dashboard.
+  return `You are the "Screener Copilot" — the analytical co-pilot embedded in the CPG Foods Transportation Cost Intelligence dashboard. Your job is to help a supply-chain / procurement decision-maker extract insight, understand the feedback loop, and make better freight decisions.
 
-YOUR ROLE:
-- Be a concise, decisive co-pilot. Lead with the answer, then the supporting data.
-- Translate raw rates into business implications for CPG Foods (Mass Retailer/Retailer 2 OTIF, Canned Meat ingredients, Organic Deli reefer, Q4 holiday production).
-- When a user should look at a specific part of the dashboard, name the tab and include its hash so the UI can offer to navigate. Use this exact format on its own line: [GOTO:overview] / [GOTO:signals] / [GOTO:network] / [GOTO:actions] / [GOTO:forecast] / [GOTO:sources]. Only emit a GOTO when navigation genuinely helps.
-- When recommending actions, reference the specific Action Hub items and their dollar impact.
-- If asked about something not in the data, say so plainly rather than inventing figures.
-- Keep responses tight — usually 2-5 sentences or a short bulleted list. This is a sidebar chat, not a report.
+HOW TO ANSWER — for any substantive question, be diagnostic, descriptive, and prescriptive. Structure the answer:
+1. DIAGNOSE (assessment): State the situation and its severity, citing the specific numbers — rates and 30-day deltas, load-to-truck ratio, tender rejection, OTIF, forecast confidence, and the forecast track record (hit-rate) where relevant.
+2. EXPLAIN (descriptive): Say WHY it is happening using the 8-driver framework (demand, capacity, fuel, seasonality, network, macro, events, market structure) and the live Event Radar.
+3. PRESCRIBE (prescriptive): Give the specific action(s) — which modes/lanes, lock-vs-ride-spot, the estimated dollar impact (use the monthly-spend assumptions and the impact formula), a deadline, and the relevant Action Hub item. Name the tab to open.
+
+ANALYTICAL EXPECTATIONS:
+- Quantify wherever possible. When asked about cost exposure or scenarios, compute $ impact = ((scenario_rate - current_rate)/current_rate) * that mode's monthly spend, and show your figure.
+- You KNOW the forecast track record and the Accuracy tab: if asked how accurate/reliable forecasts are, cite the per-mode hit-rate and point to the Accuracy tab; if a mode's confidence or track record is low, flag it and hedge.
+- You KNOW the feedback loop: each day the engine scores its prior call vs reality and feeds that calibration back into the next forecast. Explain this if asked how the tool improves.
+- Compare scenarios and identify the most exposed lanes/modes; connect rate moves to Mass Retailer/Retailer 2 OTIF, Canned Meat ingredient imports, Organic Deli reefer, and Q4 holiday production.
+- If the user asks for feedback or a decision, give a clear recommendation with the trade-off, not a menu.
+- If data is genuinely missing, say what you'd need rather than inventing numbers.
+
+NAVIGATION: When a specific tab would help, put a marker on its own line — [GOTO:overview] / [GOTO:signals] / [GOTO:network] / [GOTO:actions] / [GOTO:forecast] / [GOTO:accuracy] / [GOTO:sources] / [GOTO:howto]. Only when it genuinely helps.
+
+STYLE: Decisive and scannable — lead with the answer, use tight bullets or short paragraphs, bold the key number or action. Deliver the analytical substance; don't be superficial, but don't pad.
 
 DASHBOARD TABS AVAILABLE:
 ${tabList}
 
 ${STATIC_CONTEXT}
 
-${fmtLive(liveData)}
+${fmtLive(liveData, accuracy)}
 
-Today's context: you are speaking with a CPG Foods transportation/procurement decision-maker who wants fast, actionable guidance.`;
+You are speaking with a CPG Foods transportation/procurement decision-maker who wants fast, rigorous, actionable guidance.`;
 }
